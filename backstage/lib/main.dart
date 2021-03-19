@@ -27,6 +27,83 @@ class MyApp extends StatelessWidget {
   }
 }
 
+class HostRoom extends StatefulWidget {
+  @override
+  _HostRoomState createState() => _HostRoomState();
+}
+
+class _HostRoomState extends State<HostRoom> {
+  List<String> audienceRequests = [
+    'Play this song',
+    'Play that song',
+    'Can you give a shout out to me please',
+    'What time are you done?'
+  ];
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Host Page"),
+      ),
+      body: ListView.builder(
+          itemCount: audienceRequests.length,
+          itemBuilder: (BuildContext context, int i) {
+            return ListTile(
+              title: Text(audienceRequests[i]),
+            );
+          }),
+    );
+  }
+}
+
+class HostPage extends StatefulWidget {
+  @override
+  _HostPageState createState() => _HostPageState();
+}
+
+class _HostPageState extends State<HostPage> {
+  List<String> rooms = ["Room 1", "Room 2"];
+
+  void _createRoom() {
+    setState(() {
+      rooms.add('Room ${rooms.length + 1}');
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text("Host Page"),
+      ),
+      body: ListView.builder(
+          itemCount: rooms.length,
+          itemBuilder: (BuildContext context, int i) {
+            return ListTile(
+              title: Text(rooms[i]),
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => HostRoom()));
+              },
+            );
+          }),
+      bottomNavigationBar: BottomAppBar(
+        shape: const CircularNotchedRectangle(),
+        child: Container(
+          height: 50.0,
+        ),
+      ),
+      floatingActionButton: FloatingActionButton(
+        onPressed: _createRoom,
+        tooltip: 'Create Room',
+        child: const Icon(Icons.add),
+      ),
+      floatingActionButtonLocation: FloatingActionButtonLocation
+          .centerDocked, // This trailing comma makes auto-formatting nicer for build methods.
+    );
+  }
+}
+
 class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
 
@@ -47,19 +124,6 @@ class MyHomePage extends StatefulWidget {
 }
 
 class _MyHomePageState extends State<MyHomePage> {
-  int _counter = 0;
-
-  void _incrementCounter() {
-    setState(() {
-      // This call to setState tells the Flutter framework that something has
-      // changed in this State, which causes it to rerun the build method below
-      // so that the display can reflect the updated values. If we changed
-      // _counter without calling setState(), then the build method would not be
-      // called again, and so nothing would appear to happen.
-      _counter++;
-    });
-  }
-
   @override
   Widget build(BuildContext context) {
     // This method is rerun every time setState is called, for instance as done
@@ -79,13 +143,12 @@ class _MyHomePageState extends State<MyHomePage> {
           itemBuilder: (BuildContext context, int i) {
             return ListTile(
               title: Text(widget.actors[i]),
+              onTap: () {
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => HostPage()));
+              },
             );
           }),
-      floatingActionButton: FloatingActionButton(
-        onPressed: _incrementCounter,
-        tooltip: 'Create Room',
-        child: Icon(Icons.add),
-      ), // This trailing comma makes auto-formatting nicer for build methods.
     );
   }
 }
