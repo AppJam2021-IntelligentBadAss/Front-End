@@ -147,11 +147,65 @@ class _MyHomePageState extends State<MyHomePage> {
             return ListTile(
               title: Text(widget.actors[i]),
               onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => HostPage()));
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            OpenPage(page: widget.actors[i])));
               },
             );
           }),
+    );
+  }
+}
+
+// This class simply to determine whether
+// we are navigating to the host page or the audience page
+class OpenPage extends StatelessWidget {
+  final String page;
+
+  //In this constructor we are requiring passing in the string name of
+  //the page we want to navigate to
+  OpenPage({Key key, @required this.page}) : super(key: key);
+
+  @override
+  Widget build(BuildContext context) {
+    return (page == 'Host') ? HostPage() : AudiencePage();
+  }
+}
+
+class AudiencePage extends StatefulWidget {
+  @override
+  _AudiencePageState createState() => _AudiencePageState();
+}
+
+class _AudiencePageState extends State<AudiencePage> {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Audience Page',
+      home: _TextButton(),
+      theme: ThemeData(
+          textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(primary: Colors.blue))),
+    );
+  }
+}
+
+class _TextButton extends StatelessWidget {
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('JOIN'),
+      ),
+      body: Center(
+        child: TextButton(
+          child: Text('Join via QR code'),
+          onPressed: () {
+            print('Pressed');
+          },
+        ),
+      ),
     );
   }
 }
