@@ -8,6 +8,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'model/data.dart' as data;
 import 'model/room.dart';
+import 'pages/audience_page.dart';
 import 'dart:async';
 
 void main() async {
@@ -73,7 +74,6 @@ class HostPage extends StatefulWidget {
 }
 
 class _HostPageState extends State<HostPage> {
-
   StreamSubscription<QuerySnapshot> _currentSubscription;
   bool _isLoading = true;
   List<Room> _rooms = <Room>[];
@@ -82,8 +82,7 @@ class _HostPageState extends State<HostPage> {
     FirebaseAuth.instance
         .signInAnonymously()
         .then((UserCredential userCredential) {
-      _currentSubscription =
-          data.loadAllRooms().listen(_updateRooms);
+      _currentSubscription = data.loadAllRooms().listen(_updateRooms);
     });
   }
 
@@ -211,92 +210,6 @@ class OpenPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return (page == 'Host') ? HostPage() : AudiencePage();
-  }
-}
-
-class AudiencePage extends StatefulWidget {
-  @override
-  _AudiencePageState createState() => _AudiencePageState();
-}
-
-class _AudiencePageState extends State<AudiencePage> {
-  @override
-  Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Audience Page',
-      home: _TextButton(),
-      theme: ThemeData(
-          textButtonTheme: TextButtonThemeData(
-              style: TextButton.styleFrom(primary: Colors.blue))),
-    );
-  }
-}
-
-class _TextButton extends StatelessWidget {
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('JOIN'),
-      ),
-      body: Center(
-        child: TextButton(
-          child: Text('Join via QR code'),
-          onPressed: () {
-            Navigator.push(
-                context,
-                MaterialPageRoute(
-                  builder: (context) => AudienceRoom(),
-                ));
-          },
-        ),
-      ),
-    );
-  }
-}
-
-class AudienceRoom extends StatefulWidget {
-  @override
-  _AudienceRoomState createState() => _AudienceRoomState();
-}
-
-class _AudienceRoomState extends State<AudienceRoom> {
-  //text controller for use to retrieve the current value
-  final myController = TextEditingController();
-
-  @override
-  void dispose() {
-    // Clean up the controller when the widget is removed from the
-    // widget tree.
-    myController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-        appBar: AppBar(
-          title: Text('Room (Audience)'),
-        ),
-        body: Padding(
-            padding: const EdgeInsets.all(8.0),
-            child: Column(
-              children: <Widget>[
-                TextField(
-                  onChanged: (text) {
-                    print("Testing text field: $text");
-                  },
-                ),
-                TextField(
-                  controller: myController,
-                ),
-                TextButton(
-                  child: Text('Send Request'),
-                  onPressed: () {
-                    print('Pressed');
-                  },
-                )
-              ],
-            )));
   }
 }
 
