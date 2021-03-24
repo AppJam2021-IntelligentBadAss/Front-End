@@ -21,5 +21,4 @@ class Room {
         name = snapshot.data()['name'],
         numAttendee = snapshot.data()['numAttendee'],
         reference = snapshot.reference;
-
 }

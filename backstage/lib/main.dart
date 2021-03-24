@@ -14,11 +14,17 @@ import 'pages/host_page.dart';
 
 void main() async {
   await Firebase.initializeApp();
-  runApp(MyApp());
+  runApp(MyApp(
+    debugWidget: HostPage(),
+  ));
 }
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
+  Widget debugWidget;
+
+  MyApp({this.debugWidget = null});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
@@ -35,7 +41,8 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home: MyHomePage(title: 'Backstage'),
+      home:
+          (debugWidget == null) ? MyHomePage(title: 'Backstage') : debugWidget,
     );
   }
 }
