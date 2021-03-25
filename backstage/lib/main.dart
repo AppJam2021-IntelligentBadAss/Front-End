@@ -1,3 +1,4 @@
+import 'package:backstage/pages/host_room.dart';
 import 'package:flutter/material.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
@@ -15,7 +16,9 @@ import 'pages/host_page.dart';
 void main() async {
   await Firebase.initializeApp();
   runApp(MyApp(
-    //debugWidget: HostPage(),
+    debugWidget: HostRoom(
+      roomId: 'ggQsSaQRzT6SP9mIDcBw',
+    ),
   ));
 }
 

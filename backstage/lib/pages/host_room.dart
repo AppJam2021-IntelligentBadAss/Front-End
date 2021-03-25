@@ -70,7 +70,6 @@ class _HostRoomState extends State<HostRoom>
       upperBoundValue: AnimationControllerValue(pixel: 400),
       duration: Duration(milliseconds: 200),
     );
-    _controller.setVisibility(true);
     super.initState();
   }
 
@@ -83,7 +82,7 @@ class _HostRoomState extends State<HostRoom>
   // Used for rubber. The bottom navigation component
   Widget _getMenuLayer() {
     return Container(
-      height: 100,
+      height: 80,
       child: Text("Messages"),
       decoration: BoxDecoration(color: Colors.blue),
     );
@@ -134,15 +133,17 @@ class _HostRoomState extends State<HostRoom>
               ),
             ],
           ), // The underlying page (Widget)
-          upperLayer: ListView.builder(
-              physics: NeverScrollableScrollPhysics(),
-              controller: _scrollController,
-              itemCount: _messages.length,
-              itemBuilder: (BuildContext context, int i) {
-                return ListTile(
-                  title: Text(_messages[i].message),
-                );
-              }), // The bottomsheet content (Widget)
+          upperLayer: Container(
+              decoration: BoxDecoration(color: Colors.cyan),
+              child: ListView.builder(
+                  //physics: NeverScrollableScrollPhysics(),
+                  controller: _scrollController,
+                  itemCount: _messages.length,
+                  itemBuilder: (BuildContext context, int i) {
+                    return ListTile(
+                      title: Text(_messages[i].message),
+                    );
+                  })), // The bottomsheet content (Widget)
           //menuLayer: _getMenuLayer(),
           animationController: _controller, // The one we created earlier
         ) //Row(
