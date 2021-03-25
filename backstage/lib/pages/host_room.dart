@@ -100,6 +100,7 @@ class _HostRoomState extends State<HostRoom>
   List<Message> _messages = <Message>[];
   RubberAnimationController _controller;
   ScrollController _scrollController = ScrollController();
+  final _userTextController = TextEditingController();
 
   @override
   Widget build(BuildContext context) {
@@ -116,15 +117,19 @@ class _HostRoomState extends State<HostRoom>
                 child: CircleAvatar(child: Text("_name[0]")),
               ),
               Text("_name", style: Theme.of(context).textTheme.headline4),
-              Container(
-                margin: EdgeInsets.only(top: 5.0),
-                child: Text("text"),
+              TextField(
+                controller: _userTextController,
               ),
               TextButton(
                 child: Text('Send Request'),
                 onPressed: () {
                   print('Pressed');
-                  data.addMessage(roomId: _roomId, message: Message.random());
+                  if (_userTextController.text.isNotEmpty) {
+                    data.addMessage(
+                        roomId: _roomId,
+                        message: Message.fromUserInput(
+                            message: _userTextController.text));
+                  }
                 },
               ),
             ],
