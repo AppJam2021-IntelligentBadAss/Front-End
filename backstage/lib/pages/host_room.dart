@@ -34,7 +34,8 @@ class _HostRoomState extends State<HostRoom>
         setState(() {
           if (userCredential.user.displayName == null ||
               userCredential.user.displayName.isEmpty) {
-            _userName = 'Anonymous (${kIsWeb ? "Web" : "Mobile"})';
+            //_userName = 'Anonymous (${kIsWeb ? "Web" : "Mobile"})';
+            _userName = 'Anonymous (${userCredential.user.uid.substring(0, 4)})';
           } else {
             _userName = userCredential.user.displayName;
           }
@@ -133,6 +134,7 @@ class _HostRoomState extends State<HostRoom>
                                   userName: _userName
                                 )
                     );
+                    _userTextController.clear();
                   }
                 },
               ),
