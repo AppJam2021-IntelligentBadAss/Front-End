@@ -113,13 +113,14 @@ class _HostRoomState extends State<HostRoom>
           lowerLayer: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Container(
-                margin: const EdgeInsets.only(right: 16.0),
-                child: CircleAvatar(child: Text("_name[0]")),
-              ),
-              Text("_name", style: Theme.of(context).textTheme.headline4),
+              //Container(
+              //  margin: const EdgeInsets.only(right: 16.0),
+              //  child: CircleAvatar(child: Text("_name[0]")),
+              //),
+              //Text("_name", style: Theme.of(context).textTheme.headline4),
               TextField(
                 controller: _userTextController,
+                decoration: InputDecoration.collapsed(hintText: 'Write down your message here...'),
               ),
               TextButton(
                 child: Text('Send Request'),
@@ -146,7 +147,7 @@ class _HostRoomState extends State<HostRoom>
               itemCount: _messages.length,
               itemBuilder: (BuildContext context, int i) {
                 return ListTile(
-                  title: Text(_messages[i].message),
+                  title: Text("${_messages[i].userName}: ${_messages[i].message}"),
                 );
               }), // The bottomsheet content (Widget)
           //menuLayer: _getMenuLayer(),
