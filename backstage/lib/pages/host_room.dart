@@ -68,8 +68,8 @@ class _HostRoomState extends State<HostRoom>
     _controller = RubberAnimationController(
       vsync: this,
       dismissable: true,
-      lowerBoundValue: AnimationControllerValue(pixel: 400),
-      upperBoundValue: AnimationControllerValue(pixel: 400),
+      lowerBoundValue: AnimationControllerValue(pixel: 450),
+      upperBoundValue: AnimationControllerValue(pixel: 450),
       //halfBoundValue: AnimationControllerValue(percentage: 0.8),
       duration: Duration(milliseconds: 200),
     );

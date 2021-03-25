@@ -9,7 +9,8 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'model/data.dart' as data;
 import 'model/room.dart';
-import 'pages/audience_page.dart';
+//import 'pages/audience_page.dart';
+import 'pages/audience_page_choose_room.dart';
 import 'dart:async';
 import 'pages/host_page.dart';
 
@@ -31,7 +32,7 @@ class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Flutter Demo',
+      title: 'TANDA',
       theme: ThemeData(
         // This is the theme of your application.
         //
@@ -44,8 +45,7 @@ class MyApp extends StatelessWidget {
         // is not restarted.
         primarySwatch: Colors.blue,
       ),
-      home:
-          (debugWidget == null) ? MyHomePage(title: 'Backstage') : debugWidget,
+      home: (debugWidget == null) ? MyHomePage(title: 'Tanda') : debugWidget,
     );
   }
 }
