@@ -15,7 +15,7 @@ import 'pages/host_page.dart';
 void main() async {
   await Firebase.initializeApp();
   runApp(MyApp(
-    debugWidget: HostPage(),
+    //debugWidget: HostPage(),
   ));
 }
 

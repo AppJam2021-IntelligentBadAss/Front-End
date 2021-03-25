@@ -8,6 +8,7 @@ import '../model/data.dart' as data;
 import '../model/room.dart';
 
 import 'host_room.dart';
+import 'dialogs/room_create.dart';
 
 class HostPage extends StatefulWidget {
   @override
@@ -17,6 +18,7 @@ class HostPage extends StatefulWidget {
 class _HostPageState extends State<HostPage> {
   StreamSubscription<QuerySnapshot> _currentSubscription;
   bool _isLoading = true;
+  String _userId;
   List<Room> _rooms = <Room>[];
 
   _HostPageState() {
@@ -43,11 +45,28 @@ class _HostPageState extends State<HostPage> {
   }
 
   Future<void> _onAddRoomPressed() async {
+    final newRoom = await showDialog<Room>(
+      context: context,
+      builder: (_) => RoomCreateDialog(
+        userId: _userId,
+        //userName: _userName,
+      ),
+    );
+    if (newRoom != null) {
+      // Save the review
+      return data.addRoom(
+        room: newRoom,
+      );
+    }
+    
+    /*
+    // legacy: hard coded
     final room = Room(
       name: "test room name",
-      numAttendee: 0,
+      //numAttendee: 0,
     );
     data.addRoom(room);
+    */
   }
 
   @override
@@ -65,7 +84,9 @@ class _HostPageState extends State<HostPage> {
               title: Text(_rooms[i].name),
               onTap: () {
                 Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => HostRoom()));
+                    MaterialPageRoute(builder: (context) => HostRoom(roomId: _rooms[i].id,)));
+                //Navigator.pushNamed(context, HostRoom.route,
+                    //arguments: HostRoomArguments(id: _rooms[i].name));
               },
             );
           }),
