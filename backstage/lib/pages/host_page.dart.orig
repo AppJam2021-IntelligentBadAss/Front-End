@@ -8,7 +8,11 @@ import '../model/data.dart' as data;
 import '../model/room.dart';
 
 import 'host_room.dart';
+<<<<<<< HEAD
+import 'package:backstage/widgets/rooms.dart';
+=======
 import 'dialogs/room_create.dart';
+>>>>>>> 3d3b4a5fc9a34046943d8eda48a740a93ebbd51c
 
 class HostPage extends StatefulWidget {
   @override
@@ -36,14 +40,6 @@ class _HostPageState extends State<HostPage> {
     });
   }
 
-  // ---- Hard coded rooms ----
-  List<String> rooms = ["Room 1", "Room 2"];
-  void _createRoom() {
-    setState(() {
-      rooms.add('Room ${rooms.length + 1}');
-    });
-  }
-
   Future<void> _onAddRoomPressed() async {
     final newRoom = await showDialog<Room>(
       context: context,
@@ -58,7 +54,7 @@ class _HostPageState extends State<HostPage> {
         room: newRoom,
       );
     }
-
+    
     /*
     // legacy: hard coded
     final room = Room(
@@ -83,14 +79,10 @@ class _HostPageState extends State<HostPage> {
               //title: Text(rooms[i]),
               title: Text(_rooms[i].name),
               onTap: () {
-                Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                        builder: (context) => HostRoom(
-                              roomId: _rooms[i].id,
-                            )));
+                Navigator.push(context,
+                    MaterialPageRoute(builder: (context) => HostRoom(roomId: _rooms[i].id,)));
                 //Navigator.pushNamed(context, HostRoom.route,
-                //arguments: HostRoomArguments(id: _rooms[i].name));
+                    //arguments: HostRoomArguments(id: _rooms[i].name));
               },
             );
           }),

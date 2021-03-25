@@ -10,10 +10,6 @@ import '../model/room.dart';
 class Rooms extends StatefulWidget {
   @override
   _RoomsState createState() => _RoomsState();
-
-  void addRoom(){
-    this.
-  }
 }
 
 class _RoomsState extends State<Rooms> {
@@ -29,7 +25,7 @@ class _RoomsState extends State<Rooms> {
     });
   }
 
-    void _updateRooms(QuerySnapshot snapshot) {
+  void _updateRooms(QuerySnapshot snapshot) {
     setState(() {
       _isLoading = false;
       _rooms = data.getRoomsFromQuery(snapshot);
@@ -37,27 +33,27 @@ class _RoomsState extends State<Rooms> {
   }
 
   Future<void> _onAddRoomPressed() async {
-    final room = Room(
+    /*final room = Room(
       name: "test room name",
       numAttendee: 0,
     );
-    data.addRoom(room);
+    data.addRoom(room);*/
   }
 
   @override
   Widget build(BuildContext context) {
     return ListView.builder(
-          //itemCount: rooms.length,
-          itemCount: _rooms.length,
-          itemBuilder: (BuildContext context, int i) {
-            return ListTile(
-              //title: Text(rooms[i]),
-              title: Text(_rooms[i].name),
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => HostRoom()));
-              },
-            );
-          })
+        //itemCount: rooms.length,
+        itemCount: _rooms.length,
+        itemBuilder: (BuildContext context, int i) {
+          return ListTile(
+            //title: Text(rooms[i]),
+            title: Text(_rooms[i].name),
+            onTap: () {
+              Navigator.push(context,
+                  MaterialPageRoute(builder: (context) => null /*HostRoom()*/));
+            },
+          );
+        });
   }
 }
