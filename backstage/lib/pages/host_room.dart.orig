@@ -35,8 +35,7 @@ class _HostRoomState extends State<HostRoom>
           if (userCredential.user.displayName == null ||
               userCredential.user.displayName.isEmpty) {
             //_userName = 'Anonymous (${kIsWeb ? "Web" : "Mobile"})';
-            _userName =
-                'Anonymous (${userCredential.user.uid.substring(0, 4)})';
+            _userName = 'Anonymous (${userCredential.user.uid.substring(0, 4)})';
           } else {
             _userName = userCredential.user.displayName;
           }
@@ -67,10 +66,10 @@ class _HostRoomState extends State<HostRoom>
   void initState() {
     _controller = RubberAnimationController(
       vsync: this,
-      dismissable: true,
-      lowerBoundValue: AnimationControllerValue(pixel: 400),
-      upperBoundValue: AnimationControllerValue(pixel: 400),
-      //halfBoundValue: AnimationControllerValue(percentage: 0.8),
+      //dismissable: true,
+      //lowerBoundValue: AnimationControllerValue(pixel: 100),
+      //upperBoundValue: AnimationControllerValue(pixel: 400),
+      halfBoundValue: AnimationControllerValue(percentage: 0.5),
       duration: Duration(milliseconds: 200),
     );
     super.initState();
@@ -121,8 +120,7 @@ class _HostRoomState extends State<HostRoom>
               //Text("_name", style: Theme.of(context).textTheme.headline4),
               TextField(
                 controller: _userTextController,
-                decoration: InputDecoration.collapsed(
-                    hintText: 'Write down your message here...'),
+                decoration: InputDecoration.collapsed(hintText: 'Write down your message here...'),
               ),
               TextButton(
                 child: Text('Send Request'),
@@ -132,25 +130,47 @@ class _HostRoomState extends State<HostRoom>
                     data.addMessage(
                         roomId: _roomId,
                         message: Message.fromUserInput(
+<<<<<<< HEAD
                             message: _userTextController.text,
                             userId: _userId,
                             userName: _userName));
+=======
+                                  message: _userTextController.text,
+                                  userId: _userId,
+                                  userName: _userName
+                                )
+                    );
                     _userTextController.clear();
+>>>>>>> a22f6ff668477390243820ed06cb50a3c8d305c0
                   }
                 },
               ),
             ],
           ), // The underlying page (Widget)
+<<<<<<< HEAD
+          upperLayer: Container(
+              decoration: BoxDecoration(color: Colors.cyan),
+              child: ListView.builder(
+                physics: NeverScrollableScrollPhysics(),
+                controller: _scrollController,
+                itemBuilder: (BuildContext context, int i) {
+                  return ListTile(
+                    title: Text(_messages[i].message),
+                  );
+                },
+                itemCount: _messages.length,
+              )), // The bottomsheet content (Widget)
+=======
           upperLayer: ListView.builder(
-              physics: AlwaysScrollableScrollPhysics(),
+              physics: NeverScrollableScrollPhysics(),
               controller: _scrollController,
               itemCount: _messages.length,
               itemBuilder: (BuildContext context, int i) {
                 return ListTile(
-                  title:
-                      Text("${_messages[i].userName}: ${_messages[i].message}"),
+                  title: Text("${_messages[i].userName}: ${_messages[i].message}"),
                 );
               }), // The bottomsheet content (Widget)
+>>>>>>> a22f6ff668477390243820ed06cb50a3c8d305c0
           //menuLayer: _getMenuLayer(),
           animationController: _controller, // The one we created earlier
         )) //Row(
