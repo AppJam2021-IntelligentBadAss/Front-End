@@ -127,7 +127,11 @@ class _HostRoomState extends State<HostRoom>
                     data.addMessage(
                         roomId: _roomId,
                         message: Message.fromUserInput(
-                            message: _userTextController.text));
+                                  message: _userTextController.text,
+                                  userId: _userId,
+                                  userName: _userName
+                                )
+                    );
                   }
                 },
               ),

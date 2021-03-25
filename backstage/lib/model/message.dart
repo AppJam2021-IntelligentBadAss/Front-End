@@ -23,8 +23,9 @@ class Message {
         userName = snapshot.data()['userName'],
         reference = snapshot.reference;
 
-  Message.fromUserInput({this.message, this.timestamp, this.userId, this.userName})
+  Message.fromUserInput({this.message, this.userId, this.userName})
       : id = null,
+        timestamp = null,
         reference = null;
 
   factory Message.random({String userName, String userId}) {
