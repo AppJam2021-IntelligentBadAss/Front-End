@@ -1,10 +1,24 @@
 import 'package:flutter/material.dart';
+<<<<<<< HEAD
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+=======
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/status.dart' as status;
+import 'package:firebase_core/firebase_core.dart';
+>>>>>>> 45aeaa9acbc00e9e23aef0e3e586aebe7226f353
 
-void main() {
+import 'package:firebase_auth/firebase_auth.dart';
+import 'package:cloud_firestore/cloud_firestore.dart';
+import 'model/data.dart' as data;
+import 'model/room.dart';
+import 'dart:async';
+
+void main() async {
+  await Firebase.initializeApp();
   runApp(MyApp());
 }
 
@@ -67,12 +81,41 @@ class HostPage extends StatefulWidget {
 }
 
 class _HostPageState extends State<HostPage> {
-  List<String> rooms = ["Room 1", "Room 2"];
 
+  StreamSubscription<QuerySnapshot> _currentSubscription;
+  bool _isLoading = true;
+  List<Room> _rooms = <Room>[];
+
+  _HostPageState() {
+    FirebaseAuth.instance
+        .signInAnonymously()
+        .then((UserCredential userCredential) {
+      _currentSubscription =
+          data.loadAllRooms().listen(_updateRooms);
+    });
+  }
+
+  void _updateRooms(QuerySnapshot snapshot) {
+    setState(() {
+      _isLoading = false;
+      _rooms = data.getRoomsFromQuery(snapshot);
+    });
+  }
+
+  // ---- Hard coded rooms ----
+  List<String> rooms = ["Room 1", "Room 2"];
   void _createRoom() {
     setState(() {
       rooms.add('Room ${rooms.length + 1}');
     });
+  }
+
+  Future<void> _onAddRoomPressed() async {
+    final room = Room(
+      name: "test room name",
+      numAttendee: 0,
+    );
+    data.addRoom(room);
   }
 
   @override
@@ -82,10 +125,12 @@ class _HostPageState extends State<HostPage> {
         title: Text("Host Page"),
       ),
       body: ListView.builder(
-          itemCount: rooms.length,
+          //itemCount: rooms.length,
+          itemCount: _rooms.length,
           itemBuilder: (BuildContext context, int i) {
             return ListTile(
-              title: Text(rooms[i]),
+              //title: Text(rooms[i]),
+              title: Text(_rooms[i].name),
               onTap: () {
                 Navigator.push(context,
                     MaterialPageRoute(builder: (context) => HostRoom()));
@@ -99,6 +144,7 @@ class _HostPageState extends State<HostPage> {
         ),
       ),
       floatingActionButton: FloatingActionButton(
+<<<<<<< HEAD
         onPressed: () {
           _createRoom();
           final snackBar = SnackBar(
@@ -106,6 +152,10 @@ class _HostPageState extends State<HostPage> {
           );
           ScaffoldMessenger.of(context).showSnackBar(snackBar);
         },
+=======
+        //onPressed: _createRoom,
+        onPressed: _onAddRoomPressed,
+>>>>>>> 45aeaa9acbc00e9e23aef0e3e586aebe7226f353
         tooltip: 'Create Room',
         child: const Icon(Icons.add),
       ),
@@ -164,6 +214,7 @@ class _AudienceRoomState extends State<AudienceRoom> {
       appBar: AppBar(
         title: Text('Room (Audience)'),
       ),
+<<<<<<< HEAD
       body: Container(
         padding: EdgeInsets.all(12),
         child: Column(
@@ -179,6 +230,19 @@ class _AudienceRoomState extends State<AudienceRoom> {
               child: Text('Send Request'),
               onPressed: () {
                 print('Pressed');
+=======
+      body: ListView.builder(
+          itemCount: widget.actors.length,
+          itemBuilder: (BuildContext context, int i) {
+            return ListTile(
+              title: Text(widget.actors[i]),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            OpenPage(page: widget.actors[i])));
+>>>>>>> 45aeaa9acbc00e9e23aef0e3e586aebe7226f353
               },
             )
           ],
@@ -316,6 +380,11 @@ class MyHomePage extends StatelessWidget {
   }
 }
 
+<<<<<<< HEAD
+=======
+// This class simply to determine whether
+// we are navigating to the host page or the audience page
+>>>>>>> 45aeaa9acbc00e9e23aef0e3e586aebe7226f353
 class OpenPage extends StatelessWidget {
   final String page;
 
@@ -328,3 +397,108 @@ class OpenPage extends StatelessWidget {
     return (page == 'Host') ? HostPage() : AudiencePage();
   }
 }
+<<<<<<< HEAD
+=======
+
+class AudiencePage extends StatefulWidget {
+  @override
+  _AudiencePageState createState() => _AudiencePageState();
+}
+
+class _AudiencePageState extends State<AudiencePage> {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Audience Page',
+      home: _TextButton(),
+      theme: ThemeData(
+          textButtonTheme: TextButtonThemeData(
+              style: TextButton.styleFrom(primary: Colors.blue))),
+    );
+  }
+}
+
+class _TextButton extends StatelessWidget {
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('JOIN'),
+      ),
+      body: Center(
+        child: TextButton(
+          child: Text('Join via QR code'),
+          onPressed: () {
+            Navigator.push(
+                context,
+                MaterialPageRoute(
+                  builder: (context) => AudienceRoom(),
+                ));
+          },
+        ),
+      ),
+    );
+  }
+}
+
+class AudienceRoom extends StatefulWidget {
+  @override
+  _AudienceRoomState createState() => _AudienceRoomState();
+}
+
+class _AudienceRoomState extends State<AudienceRoom> {
+  //text controller for use to retrieve the current value
+  final myController = TextEditingController();
+
+  @override
+  void dispose() {
+    // Clean up the controller when the widget is removed from the
+    // widget tree.
+    myController.dispose();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+        appBar: AppBar(
+          title: Text('Room (Audience)'),
+        ),
+        body: Padding(
+            padding: const EdgeInsets.all(8.0),
+            child: Column(
+              children: <Widget>[
+                TextField(
+                  onChanged: (text) {
+                    print("Testing text field: $text");
+                  },
+                ),
+                TextField(
+                  controller: myController,
+                ),
+                TextButton(
+                  child: Text('Send Request'),
+                  onPressed: () {
+                    print('Pressed');
+                  },
+                )
+              ],
+            )));
+  }
+}
+
+//TODO: need to connect this roomButton to roomAudience
+class RoomButton extends StatelessWidget {
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: TextButton(
+          child: Text('Send Request'),
+          onPressed: () {
+            print('Pressed');
+          },
+        ),
+      ),
+    );
+  }
+}
+>>>>>>> 45aeaa9acbc00e9e23aef0e3e586aebe7226f353
