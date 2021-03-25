@@ -65,9 +65,10 @@ class _HostRoomState extends State<HostRoom>
   void initState() {
     _controller = RubberAnimationController(
       vsync: this,
-      dismissable: true,
-      lowerBoundValue: AnimationControllerValue(pixel: 100),
-      upperBoundValue: AnimationControllerValue(pixel: 400),
+      //dismissable: true,
+      //lowerBoundValue: AnimationControllerValue(pixel: 100),
+      //upperBoundValue: AnimationControllerValue(pixel: 400),
+      halfBoundValue: AnimationControllerValue(percentage: 0.5),
       duration: Duration(milliseconds: 200),
     );
     super.initState();
@@ -83,7 +84,6 @@ class _HostRoomState extends State<HostRoom>
   Widget _getMenuLayer() {
     return Container(
       height: 80,
-      child: Text("Messages"),
       decoration: BoxDecoration(color: Colors.blue),
     );
   }
@@ -107,7 +107,8 @@ class _HostRoomState extends State<HostRoom>
         appBar: AppBar(
           title: Text("Room: $_roomName"),
         ),
-        body: RubberBottomSheet(
+        body: Container(
+            child: RubberBottomSheet(
           lowerLayer: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
@@ -127,11 +128,9 @@ class _HostRoomState extends State<HostRoom>
                     data.addMessage(
                         roomId: _roomId,
                         message: Message.fromUserInput(
-                                  message: _userTextController.text,
-                                  userId: _userId,
-                                  userName: _userName
-                                )
-                    );
+                            message: _userTextController.text,
+                            userId: _userId,
+                            userName: _userName));
                   }
                 },
               ),
@@ -140,17 +139,18 @@ class _HostRoomState extends State<HostRoom>
           upperLayer: Container(
               decoration: BoxDecoration(color: Colors.cyan),
               child: ListView.builder(
-                  //physics: NeverScrollableScrollPhysics(),
-                  controller: _scrollController,
-                  itemCount: _messages.length,
-                  itemBuilder: (BuildContext context, int i) {
-                    return ListTile(
-                      title: Text(_messages[i].message),
-                    );
-                  })), // The bottomsheet content (Widget)
+                physics: NeverScrollableScrollPhysics(),
+                controller: _scrollController,
+                itemBuilder: (BuildContext context, int i) {
+                  return ListTile(
+                    title: Text(_messages[i].message),
+                  );
+                },
+                itemCount: _messages.length,
+              )), // The bottomsheet content (Widget)
           //menuLayer: _getMenuLayer(),
           animationController: _controller, // The one we created earlier
-        ) //Row(
+        )) //Row(
         //Padding(
         //padding: const EdgeInsets.all(8.0),
 
