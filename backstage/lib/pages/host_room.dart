@@ -138,7 +138,7 @@ class _HostRoomState extends State<HostRoom>
                   title: Text(_messages[i].message),
                 );
               }), // The bottomsheet content (Widget)
-          menuLayer: _getMenuLayer(),
+          //menuLayer: _getMenuLayer(),
           animationController: _controller, // The one we created earlier
         ) //Row(
         //Padding(
