@@ -38,9 +38,10 @@ class _AudienceRoomState extends State<AudienceRoom> {
                 TextButton(
                   child: Text('Send Request'),
                   onPressed: () {
-                    print('Pressed');
+                    setState(() {});
                   },
-                )
+                ),
+                Text(myController.text),
               ],
             )));
   }

@@ -7,20 +7,21 @@ import 'package:firebase_core/firebase_core.dart';
 import '../model/data.dart' as data;
 import '../model/room.dart';
 
-import 'host_room.dart';
-import 'package:backstage/widgets/rooms.dart';
-
-class HostPage extends StatefulWidget {
+class Rooms extends StatefulWidget {
   @override
-  _HostPageState createState() => _HostPageState();
+  _RoomsState createState() => _RoomsState();
+
+  void addRoom(){
+    this.
+  }
 }
 
-class _HostPageState extends State<HostPage> {
+class _RoomsState extends State<Rooms> {
   StreamSubscription<QuerySnapshot> _currentSubscription;
   bool _isLoading = true;
   List<Room> _rooms = <Room>[];
 
-  _HostPageState() {
+  _RoomsState() {
     FirebaseAuth.instance
         .signInAnonymously()
         .then((UserCredential userCredential) {
@@ -28,7 +29,7 @@ class _HostPageState extends State<HostPage> {
     });
   }
 
-  void _updateRooms(QuerySnapshot snapshot) {
+    void _updateRooms(QuerySnapshot snapshot) {
     setState(() {
       _isLoading = false;
       _rooms = data.getRoomsFromQuery(snapshot);
@@ -45,11 +46,7 @@ class _HostPageState extends State<HostPage> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Host Page"),
-      ),
-      body: ListView.builder(
+    return ListView.builder(
           //itemCount: rooms.length,
           itemCount: _rooms.length,
           itemBuilder: (BuildContext context, int i) {
@@ -61,21 +58,6 @@ class _HostPageState extends State<HostPage> {
                     MaterialPageRoute(builder: (context) => HostRoom()));
               },
             );
-          }),
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        child: Container(
-          height: 50.0,
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        //onPressed: _createRoom,
-        onPressed: _onAddRoomPressed,
-        tooltip: 'Create Room',
-        child: const Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation
-          .centerDocked, // This trailing comma makes auto-formatting nicer for build methods.
-    );
+          })
   }
 }
