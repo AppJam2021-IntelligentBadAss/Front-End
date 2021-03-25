@@ -40,6 +40,7 @@ class _HostRoomState extends State<HostRoom>
           }
           _room = room;
           _userId = userCredential.user.uid;
+          _roomName = room.name;
 
           // Initialize the messages snapshot...
           _currentMessageSubscription = _room.reference
@@ -92,6 +93,7 @@ class _HostRoomState extends State<HostRoom>
   StreamSubscription<QuerySnapshot> _currentMessageSubscription;
 
   String _roomId;
+  String _roomName;
   Room _room;
   String _userId;
   String _userName;
@@ -103,7 +105,7 @@ class _HostRoomState extends State<HostRoom>
   Widget build(BuildContext context) {
     return Scaffold(
         appBar: AppBar(
-          title: Text("Host Room $_roomId"),
+          title: Text("Room: $_roomName"),
         ),
         body: RubberBottomSheet(
           lowerLayer: Column(
