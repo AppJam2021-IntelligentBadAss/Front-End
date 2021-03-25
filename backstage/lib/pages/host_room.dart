@@ -63,11 +63,13 @@ class _HostRoomState extends State<HostRoom>
   @override
   void initState() {
     _controller = RubberAnimationController(
-        vsync: this,
-        dismissable: true,
-        lowerBoundValue: AnimationControllerValue(pixel: 100),
-        upperBoundValue: AnimationControllerValue(pixel: 400),
-        duration: Duration(milliseconds: 200));
+      vsync: this,
+      dismissable: true,
+      lowerBoundValue: AnimationControllerValue(pixel: 100),
+      upperBoundValue: AnimationControllerValue(pixel: 400),
+      duration: Duration(milliseconds: 200),
+    );
+    _controller.setVisibility(true);
     super.initState();
   }
 
@@ -81,6 +83,7 @@ class _HostRoomState extends State<HostRoom>
   Widget _getMenuLayer() {
     return Container(
       height: 100,
+      child: Text("Messages"),
       decoration: BoxDecoration(color: Colors.blue),
     );
   }
@@ -94,6 +97,7 @@ class _HostRoomState extends State<HostRoom>
   String _userName;
   List<Message> _messages = <Message>[];
   RubberAnimationController _controller;
+  ScrollController _scrollController = ScrollController();
 
   @override
   Widget build(BuildContext context) {
@@ -124,6 +128,8 @@ class _HostRoomState extends State<HostRoom>
             ],
           ), // The underlying page (Widget)
           upperLayer: ListView.builder(
+              physics: NeverScrollableScrollPhysics(),
+              controller: _scrollController,
               itemCount: _messages.length,
               itemBuilder: (BuildContext context, int i) {
                 return ListTile(
