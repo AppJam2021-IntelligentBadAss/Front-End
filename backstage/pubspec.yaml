@@ -36,6 +36,7 @@ dependencies:
   responsive_grid: ^1.2.1+1
   smooth_star_rating: ^1.1.1
   sliver_fab: ^1.0.0
+  rubber: ^0.5.0
 
 dev_dependencies:
   flutter_test:
