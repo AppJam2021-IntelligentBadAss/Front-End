@@ -7,6 +7,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
+
 import 'package:firebase_core/firebase_core.dart';
 
 import 'package:firebase_auth/firebase_auth.dart';
@@ -47,7 +48,8 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        //primarySwatch: Colors.blue,
+        //primarySwatch: Colors.blue,      
+
         //brightness and colors
         brightness: Brightness.dark,
         primaryColor: Colors.brown[800],
@@ -130,7 +132,7 @@ class MyHomePage extends StatefulWidget {
   // always marked "final".
 
   final String title;
-  final List<String> actors = <String>['Host', 'Audience Member'];
+  final List<String> actors = <String>['Host', 'Audience Member', 'Find shows nearby'];
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -230,11 +232,13 @@ class RoomButton extends StatelessWidget {
     return Scaffold(
       body: Center(
         child: TextButton(
-          child: Text('Send Request'),
-          onPressed: () {
-            print('Pressed');
-          },
-        ),
+            child: Text('Send Request'),
+            onPressed: () {
+              final snackBar = SnackBar(
+                content: Text('Request Sent!'),
+              );
+              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+            }),
       ),
     );
   }
