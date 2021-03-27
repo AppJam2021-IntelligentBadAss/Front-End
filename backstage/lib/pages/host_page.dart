@@ -53,6 +53,10 @@ class _HostPageState extends State<HostPage> {
       ),
     );
     if (newRoom != null) {
+      final snackBar = SnackBar(
+            content: Text('Room added'),
+          );
+      ScaffoldMessenger.of(context).showSnackBar(snackBar);
       // Save the review
       return data.addRoom(
         room: newRoom,

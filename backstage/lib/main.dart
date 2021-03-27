@@ -1,5 +1,9 @@
 import 'package:backstage/pages/host_room.dart';
 import 'package:flutter/material.dart';
+
+import 'package:flutter/src/widgets/framework.dart';
+import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+
 import 'package:web_socket_channel/io.dart';
 import 'package:web_socket_channel/web_socket_channel.dart';
 import 'package:web_socket_channel/status.dart' as status;
@@ -43,9 +47,72 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        primarySwatch: Colors.blue,
+        //primarySwatch: Colors.blue,
+        //brightness and colors
+        brightness: Brightness.dark,
+        primaryColor: Colors.brown[800],
+        accentColor: Colors.deepPurple[100],
+
+        //font family
+        fontFamily: 'RobotoMono',
+
+        textTheme: TextTheme(
+          headline1: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
+        ),
       ),
       home: (debugWidget == null) ? MyHomePage(title: 'Tanda') : debugWidget,
+    );
+  }
+}
+
+List<StaggeredTile> _staggeredTiles = const <StaggeredTile>[
+  const StaggeredTile.count(2, 2),
+  const StaggeredTile.count(2, 1),
+  const StaggeredTile.count(1, 2),
+  const StaggeredTile.count(1, 1),
+  const StaggeredTile.count(2, 2),
+  const StaggeredTile.count(1, 2),
+  const StaggeredTile.count(1, 1),
+  const StaggeredTile.count(3, 1),
+  const StaggeredTile.count(1, 1),
+  const StaggeredTile.count(4, 1),
+];
+
+List<Widget> _tiles = const <Widget>[
+  const _MyHomePageTile(Colors.green, Icons.widgets),
+  const _MyHomePageTile(Colors.lightBlue, Icons.wifi),
+  const _MyHomePageTile(Colors.amber, Icons.panorama_wide_angle),
+  const _MyHomePageTile(Colors.brown, Icons.map),
+  const _MyHomePageTile(Colors.deepOrange, Icons.send),
+  const _MyHomePageTile(Colors.indigo, Icons.airline_seat_flat),
+  const _MyHomePageTile(Colors.red, Icons.bluetooth),
+  const _MyHomePageTile(Colors.pink, Icons.battery_alert),
+  const _MyHomePageTile(Colors.purple, Icons.desktop_windows),
+  const _MyHomePageTile(Colors.blue, Icons.radio),
+];
+
+class _MyHomePageTile extends StatelessWidget {
+  const _MyHomePageTile(this.backgroundColor, this.iconData);
+
+  final Color backgroundColor;
+  final IconData iconData;
+
+  @override
+  Widget build(BuildContext context) {
+    return new Card(
+      color: backgroundColor,
+      child: new InkWell(
+        onTap: () {},
+        child: new Center(
+          child: new Padding(
+            padding: const EdgeInsets.all(4.0),
+            child: new Icon(
+              iconData,
+              color: Colors.white,
+            ),
+          ),
+        ),
+      ),
     );
   }
 }
@@ -84,7 +151,7 @@ class _MyHomePageState extends State<MyHomePage> {
         // the App.build method, and use it to set our appbar title.
         title: Text(widget.title),
       ),
-      body: ListView.builder(
+      /*body: ListView.builder(
           itemCount: widget.actors.length,
           itemBuilder: (BuildContext context, int i) {
             return ListTile(
@@ -97,7 +164,47 @@ class _MyHomePageState extends State<MyHomePage> {
                             OpenPage(page: widget.actors[i])));
               },
             );
-          }),
+          }),*/
+      body: new Padding(
+              padding: const EdgeInsets.only(top: 12.0),
+              child: new StaggeredGridView.count(
+                crossAxisCount: 4,
+                staggeredTiles: _staggeredTiles,
+                children: _tiles,
+                mainAxisSpacing: 4.0,
+                crossAxisSpacing: 4.0,
+                padding: const EdgeInsets.all(4.0),
+              )),
+      drawer: Drawer(
+        child: ListView(
+          padding: EdgeInsets.zero,
+          children: <Widget>[
+            DrawerHeader(
+              child: Text('Menu'),
+              decoration: BoxDecoration(
+                color: Colors.deepPurple[100],
+              ),
+            ),
+            Container(
+              height: double.maxFinite,
+              child: ListView.builder(
+                itemCount: widget.actors.length,
+                itemBuilder: (BuildContext context, int i) {
+                  return ListTile(
+                    title: Text(widget.actors[i]),
+                    onTap: () {
+                      Navigator.push(
+                          context,
+                          MaterialPageRoute(
+                              builder: (context) => OpenPage(page: widget.actors[i])));
+                    },
+                  );
+                },
+              ),
+            ),
+          ],
+        ),
+      ),
     );
   }
 }
