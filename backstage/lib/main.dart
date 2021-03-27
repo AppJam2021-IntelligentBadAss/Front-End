@@ -1,7 +1,12 @@
+import 'package:backstage/pages/host_room.dart';
 import 'package:flutter/material.dart';
 
 import 'package:flutter/src/widgets/framework.dart';
 import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
+
+import 'package:web_socket_channel/io.dart';
+import 'package:web_socket_channel/web_socket_channel.dart';
+import 'package:web_socket_channel/status.dart' as status;
 
 import 'package:firebase_core/firebase_core.dart';
 
@@ -9,20 +14,42 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'model/data.dart' as data;
 import 'model/room.dart';
+//import 'pages/audience_page.dart';
+import 'pages/audience_page_choose_room.dart';
 import 'dart:async';
+import 'pages/host_page.dart';
 
 void main() async {
   await Firebase.initializeApp();
-  runApp(MyApp());
+  runApp(MyApp(
+      /*debugWidget: HostRoom(
+      roomId: 'ggQsSaQRzT6SP9mIDcBw',
+    ),*/
+      ));
 }
 
 class MyApp extends StatelessWidget {
   // This widget is the root of your application.
+  Widget debugWidget;
+
+  MyApp({this.debugWidget = null});
+
   @override
   Widget build(BuildContext context) {
     return MaterialApp(
-      title: 'Backstage Demo',
+      title: 'TANDA',
       theme: ThemeData(
+        // This is the theme of your application.
+        //
+        // Try running your application with "flutter run". You'll see the
+        // application has a blue toolbar. Then, without quitting the app, try
+        // changing the primarySwatch below to Colors.green and then invoke
+        // "hot reload" (press "r" in the console where you ran "flutter run",
+        // or simply save your changes to "hot reload" in a Flutter IDE).
+        // Notice that the counter didn't reset back to zero; the application
+        // is not restarted.
+        //primarySwatch: Colors.blue,      
+
         //brightness and colors
         brightness: Brightness.dark,
         primaryColor: Colors.brown[800],
@@ -35,209 +62,7 @@ class MyApp extends StatelessWidget {
           headline1: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
         ),
       ),
-      home: MyHomePage(title: 'Backstage'),
-    );
-  }
-}
-
-class HostRoom extends StatefulWidget {
-  @override
-  _HostRoomState createState() => _HostRoomState();
-}
-
-class _HostRoomState extends State<HostRoom> {
-  List<String> audienceRequests = [
-    'Play this song',
-    'Play that song',
-    'Can you give a shout out to me please',
-    'What time are you done?'
-  ];
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Host Page"),
-      ),
-      body: ListView.builder(
-          itemCount: audienceRequests.length,
-          itemBuilder: (BuildContext context, int i) {
-            return ListTile(
-              title: Text(audienceRequests[i]),
-            );
-          }),
-    );
-  }
-}
-
-class HostPage extends StatefulWidget {
-  @override
-  _HostPageState createState() => _HostPageState();
-}
-
-class _HostPageState extends State<HostPage> {
-  StreamSubscription<QuerySnapshot> _currentSubscription;
-  bool _isLoading = true;
-  List<Room> _rooms = <Room>[];
-
-  _HostPageState() {
-    FirebaseAuth.instance
-        .signInAnonymously()
-        .then((UserCredential userCredential) {
-      _currentSubscription = data.loadAllRooms().listen(_updateRooms);
-    });
-  }
-
-  void _updateRooms(QuerySnapshot snapshot) {
-    setState(() {
-      _isLoading = false;
-      _rooms = data.getRoomsFromQuery(snapshot);
-    });
-  }
-
-  // ---- Hard coded rooms ----
-  List<String> rooms = ["Room 1", "Room 2"];
-  void _createRoom() {
-    setState(() {
-      rooms.add('Room ${rooms.length + 1}');
-    });
-  }
-
-  Future<void> _onAddRoomPressed() async {
-    final room = Room(
-      name: "test room name",
-      numAttendee: 0,
-    );
-    data.addRoom(room);
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text("Host Page"),
-      ),
-      body: ListView.builder(
-          //itemCount: rooms.length,
-          itemCount: _rooms.length,
-          itemBuilder: (BuildContext context, int i) {
-            return ListTile(
-              //title: Text(rooms[i]),
-              title: Text(_rooms[i].name),
-              onTap: () {
-                Navigator.push(context,
-                    MaterialPageRoute(builder: (context) => HostRoom()));
-              },
-            );
-          }),
-      bottomNavigationBar: BottomAppBar(
-        shape: const CircularNotchedRectangle(),
-        child: Container(
-          height: 50.0,
-        ),
-      ),
-      floatingActionButton: FloatingActionButton(
-        onPressed: () {
-          _createRoom();
-          final snackBar = SnackBar(
-            content: Text('Room added'),
-          );
-          ScaffoldMessenger.of(context).showSnackBar(snackBar);
-        },
-        tooltip: 'Create Room',
-        child: const Icon(Icons.add),
-      ),
-      floatingActionButtonLocation: FloatingActionButtonLocation
-          .centerDocked, // This trailing comma makes auto-formatting nicer for build methods.
-    );
-  }
-}
-
-class AudiencePage extends StatefulWidget {
-  @override
-  _AudiencePageState createState() => _AudiencePageState();
-}
-
-class _AudiencePageState extends State<AudiencePage> {
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Audience Page'),
-      ),
-      body: Center(
-          child: ElevatedButton(
-        child: Text('Join via QR'),
-        onPressed: () {
-          Navigator.push(
-            context,
-            MaterialPageRoute(builder: (context) => AudienceRoom()),
-          );
-        },
-      )),
-    );
-  }
-}
-
-class AudienceRoom extends StatefulWidget {
-  @override
-  _AudienceRoomState createState() => _AudienceRoomState();
-}
-
-class _AudienceRoomState extends State<AudienceRoom> {
-  //text controller for use to retrieve the current value
-  final myController = TextEditingController();
-
-  @override
-  void dispose() {
-    // Clean up the controller when the widget is removed from the
-    // widget tree.
-    myController.dispose();
-    super.dispose();
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    return Scaffold(
-      appBar: AppBar(
-        title: Text('Room (Audience)'),
-      ),
-      body: Container(
-        padding: EdgeInsets.all(12),
-        child: Column(
-          children: <Widget>[
-            TextField(
-              decoration: InputDecoration(
-                border: OutlineInputBorder(),
-                isDense: true,
-                contentPadding: EdgeInsets.all(8),
-              ),
-            ),
-            TextButton(
-              child: Text('Send Request'),
-              onPressed: () {
-                print('Pressed');
-              },
-            )
-          ],
-        ),
-      ),
-    );
-  }
-}
-
-class RoomButton extends StatelessWidget {
-  Widget build(BuildContext context) {
-    return Scaffold(
-      body: Center(
-        child: TextButton(
-            child: Text('Send Request'),
-            onPressed: () {
-              final snackBar = SnackBar(
-                content: Text('Request Sent!'),
-              );
-              ScaffoldMessenger.of(context).showSnackBar(snackBar);
-            }),
-      ),
+      home: (debugWidget == null) ? MyHomePage(title: 'Tanda') : debugWidget,
     );
   }
 }
@@ -294,22 +119,55 @@ class _MyHomePageTile extends StatelessWidget {
   }
 }
 
-class MyHomePage extends StatelessWidget {
-  final String title;
-  final List<String> actors = <String>[
-    'Host',
-    'Audience Member',
-    'Find shows nearby'
-  ];
-
+class MyHomePage extends StatefulWidget {
   MyHomePage({Key key, this.title}) : super(key: key);
 
+  // This widget is the home page of your application. It is stateful, meaning
+  // that it has a State object (defined below) that contains fields that affect
+  // how it looks.
+
+  // This class is the configuration for the state. It holds the values (in this
+  // case the title) provided by the parent (in this case the App widget) and
+  // used by the build method of the State. Fields in a Widget subclass are
+  // always marked "final".
+
+  final String title;
+  final List<String> actors = <String>['Host', 'Audience Member', 'Find shows nearby'];
+
+  @override
+  _MyHomePageState createState() => _MyHomePageState();
+}
+
+class _MyHomePageState extends State<MyHomePage> {
   @override
   Widget build(BuildContext context) {
+    // This method is rerun every time setState is called, for instance as done
+    // by the _incrementCounter method above.
+    //
+    // The Flutter framework has been optimized to make rerunning build methods
+    // fast, so that you can just rebuild anything that needs updating rather
+    // than having to individually change instances of widgets.
     return Scaffold(
-      appBar: AppBar(title: Text(title)),
-      body: //Center(child: Text('Work in progress')),
-          new Padding(
+      appBar: AppBar(
+        // Here we take the value from the MyHomePage object that was created by
+        // the App.build method, and use it to set our appbar title.
+        title: Text(widget.title),
+      ),
+      /*body: ListView.builder(
+          itemCount: widget.actors.length,
+          itemBuilder: (BuildContext context, int i) {
+            return ListTile(
+              title: Text(widget.actors[i]),
+              onTap: () {
+                Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                        builder: (context) =>
+                            OpenPage(page: widget.actors[i])));
+              },
+            );
+          }),*/
+      body: new Padding(
               padding: const EdgeInsets.only(top: 12.0),
               child: new StaggeredGridView.count(
                 crossAxisCount: 4,
@@ -332,15 +190,15 @@ class MyHomePage extends StatelessWidget {
             Container(
               height: double.maxFinite,
               child: ListView.builder(
-                itemCount: actors.length,
+                itemCount: widget.actors.length,
                 itemBuilder: (BuildContext context, int i) {
                   return ListTile(
-                    title: Text(actors[i]),
+                    title: Text(widget.actors[i]),
                     onTap: () {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => OpenPage(page: actors[i])));
+                              builder: (context) => OpenPage(page: widget.actors[i])));
                     },
                   );
                 },
@@ -365,5 +223,23 @@ class OpenPage extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
     return (page == 'Host') ? HostPage() : AudiencePage();
+  }
+}
+
+//TODO: need to connect this roomButton to roomAudience
+class RoomButton extends StatelessWidget {
+  Widget build(BuildContext context) {
+    return Scaffold(
+      body: Center(
+        child: TextButton(
+            child: Text('Send Request'),
+            onPressed: () {
+              final snackBar = SnackBar(
+                content: Text('Request Sent!'),
+              );
+              ScaffoldMessenger.of(context).showSnackBar(snackBar);
+            }),
+      ),
+    );
   }
 }
