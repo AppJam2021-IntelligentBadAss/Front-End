@@ -10,6 +10,8 @@ import '../model/data.dart' as data;
 import '../model/message.dart';
 import '../model/room.dart';
 
+import 'package:polls/polls.dart';
+
 class HostRoom extends StatefulWidget {
   static const route = '/room';
   final String _roomId;
@@ -73,6 +75,34 @@ class _HostRoomState extends State<HostRoom>
       //halfBoundValue: AnimationControllerValue(percentage: 0.8),
       duration: Duration(milliseconds: 200),
     );
+
+    // poll stuff
+    // This cannot be less than 2, else will throw an exception
+    options.forEach((key, value) {
+      optionArray.add(Polls.options(title: key, value: value.toDouble())) ;
+    });
+
+    poll = Polls(
+              children: optionArray,
+              question: Text('how old are you?'),
+              currentUser: this.user,
+              creatorID: this.creator,
+              voteData: usersWhoVoted,
+              userChoice: usersWhoVoted[this.user],
+              onVoteBackgroundColor: Colors.blue,
+              leadingBackgroundColor: Colors.blue,
+              backgroundColor: Colors.grey,
+              onVote: (choice) {
+                print(choice);
+                setState(() {
+                  this.usersWhoVoted[this.user] = choice;
+                  poll.children[choice-1][1] += 1;
+                  this.hasVoted = true;
+                });
+              },
+            );
+    // --------
+
     super.initState();
   }
 
@@ -103,6 +133,17 @@ class _HostRoomState extends State<HostRoom>
   ScrollController _scrollController = ScrollController();
   final _userTextController = TextEditingController();
 
+  // poll stuff
+  var options = {'a': 2, 'b': 0, 'c': 2, 'd': 3};
+  var optionArray = [];
+  Polls poll;
+  bool hasVoted = false;
+
+  String user = "king";
+  Map usersWhoVoted = {};//{'sam': 3, 'mike' : 4, 'john' : 1, 'kenny' : 1};
+  String creator = "eddy";
+  // ------------
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
@@ -114,6 +155,18 @@ class _HostRoomState extends State<HostRoom>
           lowerLayer: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
+
+              // poll stuff
+              if (!hasVoted)
+                poll,
+              if (hasVoted)
+                poll = Polls.viewPolls(
+                  children: poll.children, 
+                  question: poll.question, 
+                  userChoice: usersWhoVoted[this.user],
+                ),
+              // ------------
+
               //Container(
               //  margin: const EdgeInsets.only(right: 16.0),
               //  child: CircleAvatar(child: Text("_name[0]")),
