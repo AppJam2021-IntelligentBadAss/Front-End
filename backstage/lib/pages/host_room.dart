@@ -9,6 +9,7 @@ import 'package:rubber/rubber.dart';
 import '../model/data.dart' as data;
 import '../model/message.dart';
 import '../model/room.dart';
+import '../model/poll.dart';
 
 import 'package:polls/polls.dart';
 
@@ -60,6 +61,74 @@ class _HostRoomState extends State<HostRoom>
               print("_messages: ${_messages.length}");
             });
           });
+
+          // Initialize the polls snapshot...
+          _currentMessageSubscription = _room.reference
+              .collection('polls')
+              //.orderBy('voteCount', descending: false)
+              .snapshots()
+              .listen((QuerySnapshot pollSnap) {
+                setState(() {
+                  //_isLoading = false;
+                  _polls = pollSnap.docs.map((DocumentSnapshot doc) {
+                    return Poll.fromSnapshot(doc);
+                  }).toList();
+                  print("_polls length: ${_polls.length}");
+                  if (_polls.length>0)
+                    print("_polls id: ${_polls[0].id}");
+                });
+
+                if (_polls.length>0)
+                {
+                  // Initialize the options snapshot...
+                  _currentMessageSubscription = _room.reference
+                    .collection('polls')
+                    .doc(_polls[0].id)
+                    .collection('pollOptions')
+                    //.orderBy('voteCount', descending: false)
+                    .snapshots()
+                    .listen((QuerySnapshot optionSnap) {
+                      setState(() {
+                        //_isLoading = false;
+                        _options = optionSnap.docs.map((DocumentSnapshot doc) {
+                          return Option.fromSnapshot(doc);
+                        }).toList();
+                        print("_options: ${_options.length}");
+                        //print("_options: ${_options[0].option}");
+                        var _optionArray=[];
+                        _options.forEach((element) {
+                          _optionArray.add(Polls.options(title: element.option, value: element.voteCount.toDouble())) ;
+                        });
+
+                        
+                        poll = Polls(
+                          children: _optionArray,
+                          //question: Text('how old are you?'),
+                          question: Text(_polls[0].question),
+                          currentUser: this.user,
+                          creatorID: this.creator,
+                          voteData: usersWhoVoted,
+                          userChoice: usersWhoVoted[this.user],
+                          onVoteBackgroundColor: Colors.blue,
+                          leadingBackgroundColor: Colors.blue,
+                          backgroundColor: Colors.grey,
+                          onVote: (choice) {
+                            print(choice);
+                            setState(() {
+                              this.usersWhoVoted[this.user] = choice;
+                              poll.children[choice-1][1] += 1;
+                              this.hasVoted = true;
+                            });
+                          },
+                        );
+
+
+                      });
+                    });
+                } // if
+
+              });
+          
         });
       });
     });
@@ -81,26 +150,6 @@ class _HostRoomState extends State<HostRoom>
     options.forEach((key, value) {
       optionArray.add(Polls.options(title: key, value: value.toDouble())) ;
     });
-
-    poll = Polls(
-              children: optionArray,
-              question: Text('how old are you?'),
-              currentUser: this.user,
-              creatorID: this.creator,
-              voteData: usersWhoVoted,
-              userChoice: usersWhoVoted[this.user],
-              onVoteBackgroundColor: Colors.blue,
-              leadingBackgroundColor: Colors.blue,
-              backgroundColor: Colors.grey,
-              onVote: (choice) {
-                print(choice);
-                setState(() {
-                  this.usersWhoVoted[this.user] = choice;
-                  poll.children[choice-1][1] += 1;
-                  this.hasVoted = true;
-                });
-              },
-            );
     // --------
 
     super.initState();
@@ -129,6 +178,8 @@ class _HostRoomState extends State<HostRoom>
   String _userId;
   String _userName;
   List<Message> _messages = <Message>[];
+  List<Poll> _polls = <Poll>[];
+  List<Option> _options = <Option>[];
   RubberAnimationController _controller;
   ScrollController _scrollController = ScrollController();
   final _userTextController = TextEditingController();
@@ -157,7 +208,7 @@ class _HostRoomState extends State<HostRoom>
             children: [
 
               // poll stuff
-              if (!hasVoted)
+              if (!hasVoted && poll!=null)
                 poll,
               if (hasVoted)
                 poll = Polls.viewPolls(
@@ -181,6 +232,11 @@ class _HostRoomState extends State<HostRoom>
                 child: Text('Send Request'),
                 onPressed: () {
                   print('Pressed');
+                  /*data.addPollOption(
+                    roomId: _roomId,
+                    pollId: "vKbhOQi6RZ5oC3SRjDeq",
+                    option: Option.random()
+                  );*/
                   if (_userTextController.text.isNotEmpty) {
                     data.addMessage(
                         roomId: _roomId,
