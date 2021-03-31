@@ -123,3 +123,39 @@ Future<void> addPollOption({String roomId, String pollId, Option option}) {
         });
   });
 }
+
+// castFlag: true --> cast the vote
+// castFlag: false --> undo the vote
+Future<void> castVote({String roomId, String pollId, String optionId, String userId, bool castFlag}) {
+  final room = FirebaseFirestore.instance.collection('rooms').doc(roomId);
+  final poll = room.collection('polls').doc(pollId);
+  final targetPollOption = poll.collection('pollOptions').doc(optionId);
+
+  return FirebaseFirestore.instance.runTransaction((Transaction transaction) {
+    return transaction
+        .get(targetPollOption)
+        .then((DocumentSnapshot doc) => Option.fromSnapshot(doc))
+        .then((Option fresh) {
+          print("Cast vote to Option ID: ${fresh.id}");
+          print("Who voted to this Option: ${fresh.userIdsVoted}");
+          List myList = fresh.userIdsVoted;
+          if (castFlag)
+          {
+            if (!myList.contains(userId))
+            {
+              myList.add(userId);
+              print("added? $myList");
+            }
+          }
+          else
+          {
+            myList.remove(userId);
+          }
+
+          transaction.update(targetPollOption, {
+            'userIdsVoted': myList,
+            'voteCount': myList.length,
+          });
+        });
+  });
+}

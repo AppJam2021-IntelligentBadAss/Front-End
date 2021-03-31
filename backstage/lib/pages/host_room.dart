@@ -100,6 +100,16 @@ class _HostRoomState extends State<HostRoom>
                         value: element.voteCount.toDouble()));
                   });
 
+                  for (var element in _options){
+                    if(element.userIdsVoted.contains(_userId))
+                    {
+                      hasVoted = true;
+                      votedOptionId = element.id;
+                      print("You have voted $votedOptionId");
+                      break;
+                    }
+                  }
+
                   poll = Polls(
                     children: _optionArray,
                     //question: Text('how old are you?'),
@@ -113,6 +123,10 @@ class _HostRoomState extends State<HostRoom>
                     backgroundColor: Colors.grey,
                     onVote: (choice) {
                       print(choice);
+                      print("Option chosen: " + _options[choice-1].option + " (" + _options[choice-1].id + ")");
+                      print("userId: "+_userId);
+                      String _optionId = _options[choice-1].id;
+                      data.castVote(roomId: _room.id, pollId: _polls[0].id, optionId: _optionId, userId: _userId, castFlag: true);
                       setState(() {
                         this.usersWhoVoted[this.user] = choice;
                         poll.children[choice - 1][1] += 1;
@@ -182,8 +196,9 @@ class _HostRoomState extends State<HostRoom>
   // poll stuff
   var options = {'a': 2, 'b': 0, 'c': 2, 'd': 3};
   var optionArray = [];
-  Polls poll;
+  Polls poll, poll2;
   bool hasVoted = false;
+  String votedOptionId;
 
   String user = "king";
   Map usersWhoVoted = {}; //{'sam': 3, 'mike' : 4, 'john' : 1, 'kenny' : 1};
@@ -232,12 +247,28 @@ class _HostRoomState extends State<HostRoom>
                 },
               ),
               // poll stuff
-              if (!hasVoted && poll != null) poll,
+              if (!hasVoted && poll != null)
+                poll = Polls.castVote(
+                  children: poll.children,
+                  question: poll.question,
+                  onVote: poll.onVote,
+                ),
               if (hasVoted)
-                poll = Polls.viewPolls(
+                poll2 = Polls.viewPolls(
                   children: poll.children,
                   question: poll.question,
                   userChoice: usersWhoVoted[this.user],
+                ),
+              if (hasVoted)
+                TextButton(
+                  child: Text('Undo the vote'),
+                  onPressed: () {
+                    print('Pressed');
+                    data.castVote(roomId: _room.id, pollId: _polls[0].id, optionId: votedOptionId, userId: _userId, castFlag: false);
+                    setState(() {
+                      hasVoted = false;
+                    });
+                  },
                 ),
               // ------------
             ],
