@@ -68,67 +68,62 @@ class _HostRoomState extends State<HostRoom>
               //.orderBy('voteCount', descending: false)
               .snapshots()
               .listen((QuerySnapshot pollSnap) {
+            setState(() {
+              //_isLoading = false;
+              _polls = pollSnap.docs.map((DocumentSnapshot doc) {
+                return Poll.fromSnapshot(doc);
+              }).toList();
+              print("_polls length: ${_polls.length}");
+              if (_polls.length > 0) print("_polls id: ${_polls[0].id}");
+            });
+
+            if (_polls.length > 0) {
+              // Initialize the options snapshot...
+              _currentMessageSubscription = _room.reference
+                  .collection('polls')
+                  .doc(_polls[0].id)
+                  .collection('pollOptions')
+                  //.orderBy('voteCount', descending: false)
+                  .snapshots()
+                  .listen((QuerySnapshot optionSnap) {
                 setState(() {
                   //_isLoading = false;
-                  _polls = pollSnap.docs.map((DocumentSnapshot doc) {
-                    return Poll.fromSnapshot(doc);
+                  _options = optionSnap.docs.map((DocumentSnapshot doc) {
+                    return Option.fromSnapshot(doc);
                   }).toList();
-                  print("_polls length: ${_polls.length}");
-                  if (_polls.length>0)
-                    print("_polls id: ${_polls[0].id}");
-                });
+                  print("_options: ${_options.length}");
+                  //print("_options: ${_options[0].option}");
+                  var _optionArray = [];
+                  _options.forEach((element) {
+                    _optionArray.add(Polls.options(
+                        title: element.option,
+                        value: element.voteCount.toDouble()));
+                  });
 
-                if (_polls.length>0)
-                {
-                  // Initialize the options snapshot...
-                  _currentMessageSubscription = _room.reference
-                    .collection('polls')
-                    .doc(_polls[0].id)
-                    .collection('pollOptions')
-                    //.orderBy('voteCount', descending: false)
-                    .snapshots()
-                    .listen((QuerySnapshot optionSnap) {
+                  poll = Polls(
+                    children: _optionArray,
+                    //question: Text('how old are you?'),
+                    question: Text(_polls[0].question),
+                    currentUser: this.user,
+                    creatorID: this.creator,
+                    voteData: usersWhoVoted,
+                    userChoice: usersWhoVoted[this.user],
+                    onVoteBackgroundColor: Colors.blue,
+                    leadingBackgroundColor: Colors.blue,
+                    backgroundColor: Colors.grey,
+                    onVote: (choice) {
+                      print(choice);
                       setState(() {
-                        //_isLoading = false;
-                        _options = optionSnap.docs.map((DocumentSnapshot doc) {
-                          return Option.fromSnapshot(doc);
-                        }).toList();
-                        print("_options: ${_options.length}");
-                        //print("_options: ${_options[0].option}");
-                        var _optionArray=[];
-                        _options.forEach((element) {
-                          _optionArray.add(Polls.options(title: element.option, value: element.voteCount.toDouble())) ;
-                        });
-
-                        
-                        poll = Polls(
-                          children: _optionArray,
-                          //question: Text('how old are you?'),
-                          question: Text(_polls[0].question),
-                          currentUser: this.user,
-                          creatorID: this.creator,
-                          voteData: usersWhoVoted,
-                          userChoice: usersWhoVoted[this.user],
-                          onVoteBackgroundColor: Colors.blue,
-                          leadingBackgroundColor: Colors.blue,
-                          backgroundColor: Colors.grey,
-                          onVote: (choice) {
-                            print(choice);
-                            setState(() {
-                              this.usersWhoVoted[this.user] = choice;
-                              poll.children[choice-1][1] += 1;
-                              this.hasVoted = true;
-                            });
-                          },
-                        );
-
-
+                        this.usersWhoVoted[this.user] = choice;
+                        poll.children[choice - 1][1] += 1;
+                        this.hasVoted = true;
                       });
-                    });
-                } // if
-
+                    },
+                  );
+                });
               });
-          
+            } // if
+          });
         });
       });
     });
@@ -139,8 +134,8 @@ class _HostRoomState extends State<HostRoom>
     _controller = RubberAnimationController(
       vsync: this,
       dismissable: true,
-      lowerBoundValue: AnimationControllerValue(pixel: 450),
-      upperBoundValue: AnimationControllerValue(pixel: 450),
+      lowerBoundValue: AnimationControllerValue(pixel: 350),
+      upperBoundValue: AnimationControllerValue(pixel: 350),
       //halfBoundValue: AnimationControllerValue(percentage: 0.8),
       duration: Duration(milliseconds: 200),
     );
@@ -148,7 +143,7 @@ class _HostRoomState extends State<HostRoom>
     // poll stuff
     // This cannot be less than 2, else will throw an exception
     options.forEach((key, value) {
-      optionArray.add(Polls.options(title: key, value: value.toDouble())) ;
+      optionArray.add(Polls.options(title: key, value: value.toDouble()));
     });
     // --------
 
@@ -191,7 +186,7 @@ class _HostRoomState extends State<HostRoom>
   bool hasVoted = false;
 
   String user = "king";
-  Map usersWhoVoted = {};//{'sam': 3, 'mike' : 4, 'john' : 1, 'kenny' : 1};
+  Map usersWhoVoted = {}; //{'sam': 3, 'mike' : 4, 'john' : 1, 'kenny' : 1};
   String creator = "eddy";
   // ------------
 
@@ -206,18 +201,6 @@ class _HostRoomState extends State<HostRoom>
           lowerLayer: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-
-              // poll stuff
-              if (!hasVoted && poll!=null)
-                poll,
-              if (hasVoted)
-                poll = Polls.viewPolls(
-                  children: poll.children, 
-                  question: poll.question, 
-                  userChoice: usersWhoVoted[this.user],
-                ),
-              // ------------
-
               //Container(
               //  margin: const EdgeInsets.only(right: 16.0),
               //  child: CircleAvatar(child: Text("_name[0]")),
@@ -248,6 +231,15 @@ class _HostRoomState extends State<HostRoom>
                   }
                 },
               ),
+              // poll stuff
+              if (!hasVoted && poll != null) poll,
+              if (hasVoted)
+                poll = Polls.viewPolls(
+                  children: poll.children,
+                  question: poll.question,
+                  userChoice: usersWhoVoted[this.user],
+                ),
+              // ------------
             ],
           ), // The underlying page (Widget)
           upperLayer: ListView.builder(
