@@ -1,3 +1,5 @@
+import 'package:backstage/main.dart';
+import 'package:backstage/pages/audience_page.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
@@ -5,21 +7,31 @@ import 'constants.dart';
 import 'custom_route.dart';
 import 'dashboard_screen.dart';
 import 'users.dart';
+import 'audience_page_choose_room.dart' as audiencePage;
+import 'host_page.dart';
 
 class LoginScreen extends StatelessWidget {
   static const routeName = '/auth';
 
   Duration get loginTime => Duration(milliseconds: timeDilation.ceil() * 2250);
 
+  String page = 'Host';
+
   Future<String> _loginUser(LoginData data) {
     return Future.delayed(loginTime).then((_) {
-      if (!mockUsers.containsKey(data.name)) {
-        return 'Username not exists';
+      if (data.name.isEmpty && data.password.isEmpty) {
+        page = "Audience";
+        return null;
+      } else {
+        if (!mockUsers.containsKey(data.name)) {
+          return 'Username not exists';
+        }
+        if (mockUsers[data.name] != data.password) {
+          return 'Password does not match';
+        }
+        page = 'Host';
+        return null;
       }
-      if (mockUsers[data.name] != data.password) {
-        return 'Password does not match';
-      }
-      return null;
     });
   }
 
@@ -135,14 +147,16 @@ class LoginScreen extends StatelessWidget {
       //   ),
       // ),
       emailValidator: (value) {
-        if (!value.contains('@') || !value.endsWith('.com')) {
+        if (value.isEmpty) {
+          return null;
+        } else if (!value.contains('@') || !value.endsWith('.com')) {
           return "Email must contain '@' and end with '.com'";
         }
         return null;
       },
       passwordValidator: (value) {
         if (value.isEmpty) {
-          return 'Password is empty';
+          return null; //'Password is empty';
         }
         return null;
       },
@@ -160,8 +174,8 @@ class LoginScreen extends StatelessWidget {
       },
       onSubmitAnimationCompleted: () {
         Navigator.of(context).pushReplacement(FadePageRoute(
-          builder: (context) => DashboardScreen(),
-        ));
+            builder: (context) => OpenPage(page: page) //DashboardScreen(),
+            ));
       },
       onRecoverPassword: (name) {
         print('Recover password info');
