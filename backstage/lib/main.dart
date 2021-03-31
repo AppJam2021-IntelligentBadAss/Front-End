@@ -18,6 +18,7 @@ import 'model/room.dart';
 import 'pages/audience_page_choose_room.dart';
 import 'dart:async';
 import 'pages/host_page.dart';
+import 'pages/login_screen.dart';
 
 void main() async {
   await Firebase.initializeApp();
@@ -48,12 +49,12 @@ class MyApp extends StatelessWidget {
         // or simply save your changes to "hot reload" in a Flutter IDE).
         // Notice that the counter didn't reset back to zero; the application
         // is not restarted.
-        //primarySwatch: Colors.blue,      
+        //primarySwatch: Colors.blue,
 
         //brightness and colors
         brightness: Brightness.dark,
-        primaryColor: Colors.brown[800],
-        accentColor: Colors.deepPurple[100],
+        primaryColor: Colors.black, //Colors.brown[800],
+        accentColor: Colors.yellowAccent, //Colors.deepPurple[100],
 
         //font family
         fontFamily: 'RobotoMono',
@@ -62,7 +63,8 @@ class MyApp extends StatelessWidget {
           headline1: TextStyle(fontSize: 72.0, fontWeight: FontWeight.bold),
         ),
       ),
-      home: (debugWidget == null) ? MyHomePage(title: 'Tanda') : debugWidget,
+      home: (debugWidget == null)
+          ? LoginScreen() /*MyHomePage(title: 'Tanda')*/ : debugWidget,
     );
   }
 }
@@ -132,7 +134,11 @@ class MyHomePage extends StatefulWidget {
   // always marked "final".
 
   final String title;
-  final List<String> actors = <String>['Host', 'Audience Member', 'Find shows nearby'];
+  final List<String> actors = <String>[
+    'Host',
+    'Audience Member',
+    'Find shows nearby'
+  ];
 
   @override
   _MyHomePageState createState() => _MyHomePageState();
@@ -168,15 +174,15 @@ class _MyHomePageState extends State<MyHomePage> {
             );
           }),*/
       body: new Padding(
-              padding: const EdgeInsets.only(top: 12.0),
-              child: new StaggeredGridView.count(
-                crossAxisCount: 4,
-                staggeredTiles: _staggeredTiles,
-                children: _tiles,
-                mainAxisSpacing: 4.0,
-                crossAxisSpacing: 4.0,
-                padding: const EdgeInsets.all(4.0),
-              )),
+          padding: const EdgeInsets.only(top: 12.0),
+          child: new StaggeredGridView.count(
+            crossAxisCount: 4,
+            staggeredTiles: _staggeredTiles,
+            children: _tiles,
+            mainAxisSpacing: 4.0,
+            crossAxisSpacing: 4.0,
+            padding: const EdgeInsets.all(4.0),
+          )),
       drawer: Drawer(
         child: ListView(
           padding: EdgeInsets.zero,
@@ -198,7 +204,8 @@ class _MyHomePageState extends State<MyHomePage> {
                       Navigator.push(
                           context,
                           MaterialPageRoute(
-                              builder: (context) => OpenPage(page: widget.actors[i])));
+                              builder: (context) =>
+                                  OpenPage(page: widget.actors[i])));
                     },
                   );
                 },
