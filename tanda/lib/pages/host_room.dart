@@ -5,6 +5,7 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:rubber/rubber.dart';
+import 'package:tanda/model/performer.dart';
 
 import '../model/data.dart' as data;
 import '../model/message.dart';
@@ -16,19 +17,23 @@ import 'package:polls/polls.dart';
 class HostRoom extends StatefulWidget {
   static const route = '/room';
   final String _roomId;
+  final Performer _performer;
 
-  HostRoom({Key key, @required String roomId})
+  HostRoom({Key key, @required String roomId, Performer performer})
       : _roomId = roomId,
+        _performer = performer,
         super(key: key);
 
   @override
-  _HostRoomState createState() => _HostRoomState(roomId: _roomId);
+  _HostRoomState createState() =>
+      _HostRoomState(roomId: _roomId, performer: _performer);
 }
 
 class _HostRoomState extends State<HostRoom>
     with SingleTickerProviderStateMixin {
-  _HostRoomState({@required String roomId}) {
+  _HostRoomState({@required String roomId, Performer performer}) {
     _roomId = roomId;
+
     FirebaseAuth.instance
         .signInAnonymously()
         .then((UserCredential userCredential) {
@@ -46,6 +51,8 @@ class _HostRoomState extends State<HostRoom>
           _room = room;
           _userId = userCredential.user.uid;
           _roomName = room.name;
+          _userName =
+              (performer != null) ? performer.name + '(Host)' : _userName;
 
           // Initialize the messages snapshot...
           _currentMessageSubscription = _room.reference
@@ -100,9 +107,8 @@ class _HostRoomState extends State<HostRoom>
                         value: element.voteCount.toDouble()));
                   });
 
-                  for (var element in _options){
-                    if(element.userIdsVoted.contains(_userId))
-                    {
+                  for (var element in _options) {
+                    if (element.userIdsVoted.contains(_userId)) {
                       hasVoted = true;
                       votedOptionId = element.id;
                       print("You have voted $votedOptionId");
@@ -123,10 +129,19 @@ class _HostRoomState extends State<HostRoom>
                     backgroundColor: Colors.grey,
                     onVote: (choice) {
                       print(choice);
-                      print("Option chosen: " + _options[choice-1].option + " (" + _options[choice-1].id + ")");
-                      print("userId: "+_userId);
-                      String _optionId = _options[choice-1].id;
-                      data.castVote(roomId: _room.id, pollId: _polls[0].id, optionId: _optionId, userId: _userId, castFlag: true);
+                      print("Option chosen: " +
+                          _options[choice - 1].option +
+                          " (" +
+                          _options[choice - 1].id +
+                          ")");
+                      print("userId: " + _userId);
+                      String _optionId = _options[choice - 1].id;
+                      data.castVote(
+                          roomId: _room.id,
+                          pollId: _polls[0].id,
+                          optionId: _optionId,
+                          userId: _userId,
+                          castFlag: true);
                       setState(() {
                         this.usersWhoVoted[this.user] = choice;
                         poll.children[choice - 1][1] += 1;
@@ -264,7 +279,12 @@ class _HostRoomState extends State<HostRoom>
                   child: Text('Undo the vote'),
                   onPressed: () {
                     print('Pressed');
-                    data.castVote(roomId: _room.id, pollId: _polls[0].id, optionId: votedOptionId, userId: _userId, castFlag: false);
+                    data.castVote(
+                        roomId: _room.id,
+                        pollId: _polls[0].id,
+                        optionId: votedOptionId,
+                        userId: _userId,
+                        castFlag: false);
                     setState(() {
                       hasVoted = false;
                     });

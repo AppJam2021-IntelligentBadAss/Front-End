@@ -8,7 +8,7 @@ class Performer {
   final String city;
   final DocumentReference reference;
 
-  Performer._({this.name, this.city})
+  Performer({this.name, this.city})
       : id = null,
         reference = null;
 
@@ -20,7 +20,7 @@ class Performer {
         reference = snapshot.reference;
 
   factory Performer.default_performer() {
-    return Performer._(
+    return Performer(
       name: 'Wu-Tang',
       city: 'New York',
     );

@@ -3,6 +3,7 @@ import 'dart:async';
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:firebase_auth/firebase_auth.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:tanda/model/performer.dart';
 
 import '../model/data.dart' as data;
 import '../model/room.dart';
@@ -11,8 +12,13 @@ import 'host_room.dart';
 import 'dialogs/room_create.dart';
 
 class HostPage extends StatefulWidget {
+  final Performer _performer;
+  HostPage({Key key, Performer performer})
+      : _performer = performer,
+        super(key: key);
+
   @override
-  _HostPageState createState() => _HostPageState();
+  _HostPageState createState() => _HostPageState(performer: this._performer);
 }
 
 class _HostPageState extends State<HostPage> {
@@ -20,8 +26,10 @@ class _HostPageState extends State<HostPage> {
   bool _isLoading = true;
   String _userId;
   List<Room> _rooms = <Room>[];
+  Performer performer;
 
-  _HostPageState() {
+  _HostPageState({Performer performer}) {
+    this.performer = performer;
     FirebaseAuth.instance
         .signInAnonymously()
         .then((UserCredential userCredential) {
@@ -54,8 +62,8 @@ class _HostPageState extends State<HostPage> {
     );
     if (newRoom != null) {
       final snackBar = SnackBar(
-            content: Text('Room added'),
-          );
+        content: Text('Room added'),
+      );
       ScaffoldMessenger.of(context).showSnackBar(snackBar);
       // Save the review
       return data.addRoom(
@@ -92,6 +100,7 @@ class _HostPageState extends State<HostPage> {
                     MaterialPageRoute(
                         builder: (context) => HostRoom(
                               roomId: _rooms[i].id,
+                              performer: this.performer,
                             )));
                 //Navigator.pushNamed(context, HostRoom.route,
                 //arguments: HostRoomArguments(id: _rooms[i].name));

@@ -1,14 +1,11 @@
 import 'package:tanda/main.dart';
-import 'package:tanda/pages/audience_page.dart';
 import 'package:flutter/scheduler.dart' show timeDilation;
 import 'package:flutter/material.dart';
 import 'package:flutter_login/flutter_login.dart';
+import 'package:tanda/model/performer.dart';
 import 'constants.dart';
 import 'custom_route.dart';
-import 'dashboard_screen.dart';
 import 'users.dart';
-import 'audience_page_choose_room.dart' as audiencePage;
-import 'host_page.dart';
 
 class LoginScreen extends StatelessWidget {
   static const routeName = '/auth';
@@ -16,6 +13,7 @@ class LoginScreen extends StatelessWidget {
   Duration get loginTime => Duration(milliseconds: timeDilation.ceil() * 2250);
 
   String page = 'Host';
+  Performer _performer = null;
 
   Future<String> _loginUser(LoginData data) {
     return Future.delayed(loginTime).then((_) {
@@ -30,6 +28,7 @@ class LoginScreen extends StatelessWidget {
           return 'Password does not match';
         }
         page = 'Host';
+        _performer = Performer(name: data.name, city: 'SomeCity');
         return null;
       }
     });
@@ -54,22 +53,22 @@ class LoginScreen extends StatelessWidget {
       // loginAfterSignUp: false,
       // hideForgotPasswordButton: true,
       // hideSignUpButton: true,
-      // messages: LoginMessages(
-      //   usernameHint: 'Username',
-      //   passwordHint: 'Pass',
-      //   confirmPasswordHint: 'Confirm',
-      //   loginButton: 'LOG IN',
-      //   signupButton: 'REGISTER',
-      //   forgotPasswordButton: 'Forgot huh?',
-      //   recoverPasswordButton: 'HELP ME',
-      //   goBackButton: 'GO BACK',
-      //   confirmPasswordError: 'Not match!',
-      //   recoverPasswordIntro: 'Don\'t feel bad. Happens all the time.',
-      //   recoverPasswordDescription: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry',
-      //   recoverPasswordSuccess: 'Password rescued successfully',
-      //   flushbarTitleError: 'Oh no!',
-      //   flushbarTitleSuccess: 'Succes!',
-      // ),
+      messages: LoginMessages(
+        usernameHint: 'Username',
+        //   passwordHint: 'Pass',
+        //   confirmPasswordHint: 'Confirm',
+        //   loginButton: 'LOG IN',
+        //   signupButton: 'REGISTER',
+        //   forgotPasswordButton: 'Forgot huh?',
+        //   recoverPasswordButton: 'HELP ME',
+        //   goBackButton: 'GO BACK',
+        //   confirmPasswordError: 'Not match!',
+        //   recoverPasswordIntro: 'Don\'t feel bad. Happens all the time.',
+        //   recoverPasswordDescription: 'Lorem Ipsum is simply dummy text of the printing and typesetting industry',
+        //   recoverPasswordSuccess: 'Password rescued successfully',
+        //   flushbarTitleError: 'Oh no!',
+        //   flushbarTitleSuccess: 'Succes!',
+      ),
       // theme: LoginTheme(
       //   primaryColor: Colors.teal,
       //   accentColor: Colors.yellow,
@@ -146,7 +145,9 @@ class LoginScreen extends StatelessWidget {
       //     // shape: ContinuousRectangleBorder(borderRadius: BorderRadius.circular(55.0)),
       //   ),
       // ),
+
       emailValidator: (value) {
+        return null; // for now, don't validate
         if (value.isEmpty) {
           return null;
         } else if (!value.contains('@') || !value.endsWith('.com')) {
@@ -174,7 +175,10 @@ class LoginScreen extends StatelessWidget {
       },
       onSubmitAnimationCompleted: () {
         Navigator.of(context).pushReplacement(FadePageRoute(
-            builder: (context) => OpenPage(page: page) //DashboardScreen(),
+            builder: (context) => OpenPage(
+                  page: page,
+                  performer: _performer,
+                ) //DashboardScreen(),
             ));
       },
       onRecoverPassword: (name) {

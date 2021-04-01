@@ -7,6 +7,7 @@ import 'package:flutter_staggered_grid_view/flutter_staggered_grid_view.dart';
 import 'package:firebase_core/firebase_core.dart';
 
 //import 'pages/audience_page.dart';
+import 'model/performer.dart';
 import 'pages/audience_page_choose_room.dart';
 import 'dart:async';
 import 'pages/host_page.dart';
@@ -214,14 +215,17 @@ class _MyHomePageState extends State<MyHomePage> {
 // we are navigating to the host page or the audience page
 class OpenPage extends StatelessWidget {
   final String page;
+  final Performer performer;
 
   //In this constructor we are requiring passing in the string name of
   //the page we want to navigate to
-  OpenPage({Key key, @required this.page}) : super(key: key);
+  OpenPage({Key key, @required this.page, this.performer}) : super(key: key);
 
   @override
   Widget build(BuildContext context) {
-    return (page == 'Host') ? HostPage() : AudiencePage();
+    return (page == 'Host')
+        ? HostPage(performer: this.performer)
+        : AudiencePage();
   }
 }
 
