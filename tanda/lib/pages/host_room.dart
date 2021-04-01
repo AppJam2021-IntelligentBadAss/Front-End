@@ -207,6 +207,63 @@ class _HostRoomState extends State<HostRoom>
   RubberAnimationController _controller;
   ScrollController _scrollController = ScrollController();
   final _userTextController = TextEditingController();
+  final _pollQuestionTextController = TextEditingController();
+  final _pollOption1TextController = TextEditingController();
+  final _pollOption2TextController = TextEditingController();
+
+  void createPoll(){
+    data.addPoll(
+      roomId: _roomId, 
+      poll: Poll.fromUserInput(
+        question: _pollQuestionTextController.text, 
+      )
+    ).then((value) 
+      {
+        // This is copied from above
+        // The goal is to add options only "after" the poll is created
+        _currentMessageSubscription = _room.reference
+            .collection('polls')
+            .snapshots()
+            .listen((QuerySnapshot pollSnap) {
+              setState(() {
+                _polls = pollSnap.docs.map((DocumentSnapshot doc) {
+                  return Poll.fromSnapshot(doc);
+                }).toList();
+                print("***********_polls length: ${_polls.length}");
+              });
+              
+              if (_polls.length > 0)
+              { 
+                print("_polls id: ${_polls[0].id}");
+                print("roomID: ${_roomId}");
+                print("num of polls: ${_polls.length}");
+                print("_poll id: ${_polls[_polls.length-1].id}");
+                data.addPollOption(
+                  roomId: _roomId,
+                  pollId: _polls[_polls.length-1].id,
+                  option: Option.fromUserInput(
+                    option: _pollOption1TextController.text,
+                    userIdsVoted: [],
+                    voteCount: 0,
+                    )
+                );
+                data.addPollOption(
+                  roomId: _roomId,
+                  pollId: _polls[_polls.length-1].id,
+                  option: Option.fromUserInput(
+                    option: _pollOption2TextController.text,
+                    userIdsVoted: [],
+                    voteCount: 0,
+                    ),
+                );
+              }
+            }); // listen
+        
+        
+      }
+    );
+    print("create poll (${poll}) ($poll2)");
+  }
 
   // poll stuff
   var options = {'a': 2, 'b': 0, 'c': 2, 'd': 3};
@@ -261,8 +318,40 @@ class _HostRoomState extends State<HostRoom>
                   }
                 },
               ),
+              // create poll
+              if (poll==null)
+                TextField(
+                  controller: _pollQuestionTextController,
+                  decoration: InputDecoration.collapsed(
+                      hintText: 'Question...'),
+                ),
+              if (poll==null)
+                TextField(
+                  controller: _pollOption1TextController,
+                  decoration: InputDecoration.collapsed(
+                      hintText: 'Option 1...'),
+                ),
+              if (poll==null)
+                TextField(
+                  controller: _pollOption2TextController,
+                  decoration: InputDecoration.collapsed(
+                      hintText: 'Option 2...'),
+                ),
+              if ((poll==null))
+                TextButton(
+                  child: Text('Create a new Poll'),
+                  onPressed: () {
+                    print('Pressed');
+                    if (_pollQuestionTextController.text.isNotEmpty &&
+                        _pollOption1TextController.text.isNotEmpty &&
+                        _pollOption2TextController.text.isNotEmpty)
+                    {
+                        createPoll();
+                    }
+                  },
+                ),
               // poll stuff
-              if (!hasVoted && poll != null)
+              if (!hasVoted && poll != null && poll.children.length>=2)
                 poll = Polls.castVote(
                   children: poll.children,
                   question: poll.question,

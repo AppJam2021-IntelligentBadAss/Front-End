@@ -85,7 +85,7 @@ Future<void> addPoll({String roomId, Poll poll}) {
 
           transaction.set(newPoll, {
             'question': poll.question ?? "This is a question",
-            'options': poll.options,
+            //'options': poll.options,
             //'timestamp': message.timestamp ?? FieldValue.serverTimestamp(),
             //'userName': message.userName,
             //'userId': message.userId,
@@ -120,6 +120,7 @@ Future<void> addPollOption({String roomId, String pollId, Option option}) {
             'userIdsVoted': option.userIdsVoted,
             'voteCount': option.voteCount,
           });
+          print("create option: ${option.option}");
         });
   });
 }
