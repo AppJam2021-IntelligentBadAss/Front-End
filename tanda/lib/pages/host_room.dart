@@ -33,6 +33,7 @@ class _HostRoomState extends State<HostRoom>
     with SingleTickerProviderStateMixin {
   _HostRoomState({@required String roomId, Performer performer}) {
     _roomId = roomId;
+    _performer = performer;
 
     FirebaseAuth.instance
         .signInAnonymously()
@@ -203,6 +204,7 @@ class _HostRoomState extends State<HostRoom>
   StreamSubscription<QuerySnapshot> _currentMessageSubscription;
 
   String _roomId;
+  Performer _performer;
   String _roomName;
   Room _room;
   String _userId;
@@ -312,83 +314,132 @@ class _HostRoomState extends State<HostRoom>
               //  child: CircleAvatar(child: Text("_name[0]")),
               //),
               //Text("_name", style: Theme.of(context).textTheme.headline4),
-              TextField(
-                controller: _userTextController,
-                decoration: InputDecoration.collapsed(
-                    hintText: 'Write down your message here...'),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+                child: TextField(
+                  controller: _userTextController,
+                  decoration: InputDecoration.collapsed(
+                      hintText: 'Write down your message here...'),
+                ),
               ),
-              TextButton(
-                child: Text('Send Request'),
-                onPressed: () {
-                  print('Pressed');
-                  /*data.addPollOption(
-                    roomId: _roomId,
-                    pollId: "vKbhOQi6RZ5oC3SRjDeq",
-                    option: Option.random()
-                  );*/
-                  if (_userTextController.text.isNotEmpty) {
-                    data.addMessage(
-                        roomId: _roomId,
-                        message: Message.fromUserInput(
-                            message: _userTextController.text,
-                            userId: _userId,
-                            userName: _userName));
-                    _userTextController.clear();
-                  }
-                },
-              ),
-              // create poll
-              if (poll == null)
-                TextField(
-                  controller: _pollQuestionTextController,
-                  decoration:
-                      InputDecoration.collapsed(hintText: 'Question...'),
-                ),
-              if (poll == null)
-                TextField(
-                  controller: _pollOption1TextController,
-                  decoration:
-                      InputDecoration.collapsed(hintText: 'Option 1...'),
-                ),
-              if (poll == null)
-                TextField(
-                  controller: _pollOption2TextController,
-                  decoration:
-                      InputDecoration.collapsed(hintText: 'Option 2...'),
-                ),
-              if ((poll == null))
-                TextButton(
-                  child: Text('Create a new Poll'),
+              Padding(
+                padding:
+                    const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+                child: ElevatedButton.icon(
+                  label: Text('Send Request'),
+                  icon: Icon(Icons.send_rounded),
+                  style: ElevatedButton.styleFrom(
+                    primary: Colors.yellow[700],
+                    onPrimary: Colors.black,
+                  ),
                   onPressed: () {
                     print('Pressed');
-                    if (_pollQuestionTextController.text.isNotEmpty &&
-                        _pollOption1TextController.text.isNotEmpty &&
-                        _pollOption2TextController.text.isNotEmpty) {
-                      createPoll(
-                          _pollQuestionTextController.text,
-                          _pollOption1TextController.text,
-                          _pollOption2TextController.text);
-                      _pollOption1TextController.clear();
+                    /*data.addPollOption(
+                        roomId: _roomId,
+                        pollId: "vKbhOQi6RZ5oC3SRjDeq",
+                        option: Option.random()
+                      );*/
+                    if (_userTextController.text.isNotEmpty) {
+                      data.addMessage(
+                          roomId: _roomId,
+                          message: Message.fromUserInput(
+                              message: _userTextController.text,
+                              userId: _userId,
+                              userName: _userName));
+                      _userTextController.clear();
                     }
                   },
+                ),
+              ),
+              // create poll
+              if (poll == null && _performer != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 5.0, horizontal: 10.0),
+                  child: TextField(
+                    controller: _pollQuestionTextController,
+                    decoration:
+                        InputDecoration.collapsed(hintText: 'Question...'),
+                  ),
+                ),
+              if (poll == null && _performer != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 5.0, horizontal: 10.0),
+                  child: TextField(
+                    controller: _pollOption1TextController,
+                    decoration:
+                        InputDecoration.collapsed(hintText: 'Option 1...'),
+                  ),
+                ),
+              if (poll == null && _performer != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 5.0, horizontal: 10.0),
+                  child: TextField(
+                    controller: _pollOption2TextController,
+                    decoration:
+                        InputDecoration.collapsed(hintText: 'Option 2...'),
+                  ),
+                ),
+              if ((poll == null && _performer != null))
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 5.0, horizontal: 10.0),
+                  child: ElevatedButton(
+                    child: Text('Create a new Poll'),
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.yellow,
+                      onPrimary: Colors.black,
+                    ),
+                    onPressed: () {
+                      print('Pressed');
+                      if (_pollQuestionTextController.text.isNotEmpty &&
+                          _pollOption1TextController.text.isNotEmpty &&
+                          _pollOption2TextController.text.isNotEmpty) {
+                        createPoll(
+                            _pollQuestionTextController.text,
+                            _pollOption1TextController.text,
+                            _pollOption2TextController.text);
+                        _pollOption1TextController.clear();
+                      }
+                    },
+                  ),
                 ),
               // add more poll options
-              if (poll != null && poll.children.length >= 2)
-                TextField(
-                  controller: _pollOption1TextController,
-                  decoration:
-                      InputDecoration.collapsed(hintText: 'New Option...'),
+              if (poll != null &&
+                  poll.children.length >= 2 &&
+                  _performer != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 5.0, horizontal: 10.0),
+                  child: TextField(
+                    controller: _pollOption1TextController,
+                    decoration:
+                        InputDecoration.collapsed(hintText: 'New Option...'),
+                  ),
                 ),
-              if (poll != null && poll.children.length >= 2)
-                TextButton(
-                  child: Text('Add a new Option'),
-                  onPressed: () {
-                    if (_pollOption1TextController.text.isNotEmpty) {
-                      addOption();
-                      _pollOption1TextController.clear();
-                      print("poll children: ${poll.children.length}");
-                    }
-                  },
+              if (poll != null &&
+                  poll.children.length >= 2 &&
+                  _performer != null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(
+                      vertical: 5.0, horizontal: 10.0),
+                  child: ElevatedButton(
+                    child: Text('Add a new Option'),
+                    style: ElevatedButton.styleFrom(
+                      primary: Colors.yellow,
+                      onPrimary: Colors.black,
+                    ),
+                    onPressed: () {
+                      if (_pollOption1TextController.text.isNotEmpty) {
+                        addOption();
+                        _pollOption1TextController.clear();
+                        print("poll children: ${poll.children.length}");
+                      }
+                    },
+                  ),
                 ),
               // poll stuff
               if (!hasVoted &&

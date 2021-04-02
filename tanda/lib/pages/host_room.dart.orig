@@ -5,27 +5,35 @@ import 'package:firebase_auth/firebase_auth.dart';
 import 'package:flutter/foundation.dart';
 import 'package:flutter/material.dart';
 import 'package:rubber/rubber.dart';
+import 'package:tanda/model/performer.dart';
 
 import '../model/data.dart' as data;
 import '../model/message.dart';
 import '../model/room.dart';
+import '../model/poll.dart';
+
+import 'package:polls/polls.dart';
 
 class HostRoom extends StatefulWidget {
   static const route = '/room';
   final String _roomId;
+  final Performer _performer;
 
-  HostRoom({Key key, @required String roomId})
+  HostRoom({Key key, @required String roomId, Performer performer})
       : _roomId = roomId,
+        _performer = performer,
         super(key: key);
 
   @override
-  _HostRoomState createState() => _HostRoomState(roomId: _roomId);
+  _HostRoomState createState() =>
+      _HostRoomState(roomId: _roomId, performer: _performer);
 }
 
 class _HostRoomState extends State<HostRoom>
     with SingleTickerProviderStateMixin {
-  _HostRoomState({@required String roomId}) {
+  _HostRoomState({@required String roomId, Performer performer}) {
     _roomId = roomId;
+
     FirebaseAuth.instance
         .signInAnonymously()
         .then((UserCredential userCredential) {
@@ -35,13 +43,16 @@ class _HostRoomState extends State<HostRoom>
           if (userCredential.user.displayName == null ||
               userCredential.user.displayName.isEmpty) {
             //_userName = 'Anonymous (${kIsWeb ? "Web" : "Mobile"})';
-            _userName = 'Anonymous (${userCredential.user.uid.substring(0, 4)})';
+            _userName =
+                'Anonymous (${userCredential.user.uid.substring(0, 4)})';
           } else {
             _userName = userCredential.user.displayName;
           }
           _room = room;
           _userId = userCredential.user.uid;
           _roomName = room.name;
+          _userName =
+              (performer != null) ? performer.name + '(Host)' : _userName;
 
           // Initialize the messages snapshot...
           _currentMessageSubscription = _room.reference
@@ -57,6 +68,97 @@ class _HostRoomState extends State<HostRoom>
               print("_messages: ${_messages.length}");
             });
           });
+
+          // Initialize the polls snapshot...
+          _currentMessageSubscription = _room.reference
+              .collection('polls')
+              //.orderBy('voteCount', descending: false)
+              .snapshots()
+              .listen((QuerySnapshot pollSnap) {
+            setState(() {
+              //_isLoading = false;
+              _polls = pollSnap.docs.map((DocumentSnapshot doc) {
+                return Poll.fromSnapshot(doc);
+              }).toList();
+              print("_polls length: ${_polls.length}");
+              if (_polls.length > 0) print("_polls id: ${_polls[0].id}");
+            });
+
+            if (_polls.length > 0) {
+              // Initialize the options snapshot...
+              _currentMessageSubscription = _room.reference
+                  .collection('polls')
+                  .doc(_polls[0].id)
+                  .collection('pollOptions')
+                  //.orderBy('voteCount', descending: false)
+                  .snapshots()
+                  .listen((QuerySnapshot optionSnap) {
+                setState(() {
+                  //_isLoading = false;
+                  _options = optionSnap.docs.map((DocumentSnapshot doc) {
+                    return Option.fromSnapshot(doc);
+                  }).toList();
+                  print("_options: ${_options.length}");
+                  //print("_options: ${_options[0].option}");
+                  _optionArray = [];
+                  _options.forEach((element) {
+                    _optionArray.add(Polls.options(
+                        title: element.option,
+                        value: element.voteCount.toDouble()));
+                  });
+
+                  if (prevLength != 0 && prevLength != _optionArray.length) {
+                    newOptionAdded = true;
+                    print("######## change!! ");
+                  }
+                  prevLength = _optionArray.length;
+
+                  for (var element in _options) {
+                    if (element.userIdsVoted.contains(_userId)) {
+                      hasVoted = true;
+                      votedOptionId = element.id;
+                      print("You have voted $votedOptionId");
+                      break;
+                    }
+                  }
+
+                  poll = Polls(
+                    children: _optionArray,
+                    //question: Text('how old are you?'),
+                    question: Text(_polls[0].question),
+                    currentUser: this.user,
+                    creatorID: this.creator,
+                    voteData: usersWhoVoted,
+                    userChoice: usersWhoVoted[this.user],
+                    onVoteBackgroundColor: Colors.blue,
+                    leadingBackgroundColor: Colors.blue,
+                    backgroundColor: Colors.grey,
+                    onVote: (choice) {
+                      print(choice);
+                      print("Option chosen: " +
+                          _options[choice - 1].option +
+                          " (" +
+                          _options[choice - 1].id +
+                          ")");
+                      print("userId: " + _userId);
+                      String _optionId = _options[choice - 1].id;
+                      data.castVote(
+                          roomId: _room.id,
+                          pollId: _polls[0].id,
+                          optionId: _optionId,
+                          userId: _userId,
+                          castFlag: true);
+                      //setState(() {
+                      this.usersWhoVoted[this.user] = choice;
+                      poll.children[choice - 1][1] += 1;
+                      this.hasVoted = true;
+                      //});
+                    },
+                  );
+                });
+              });
+            } // if
+          });
         });
       });
     });
@@ -66,12 +168,20 @@ class _HostRoomState extends State<HostRoom>
   void initState() {
     _controller = RubberAnimationController(
       vsync: this,
-      //dismissable: true,
-      //lowerBoundValue: AnimationControllerValue(pixel: 100),
-      //upperBoundValue: AnimationControllerValue(pixel: 400),
-      halfBoundValue: AnimationControllerValue(percentage: 0.5),
+      dismissable: true,
+      lowerBoundValue: AnimationControllerValue(pixel: 200),
+      upperBoundValue: AnimationControllerValue(pixel: 200),
+      //halfBoundValue: AnimationControllerValue(percentage: 0.8),
       duration: Duration(milliseconds: 200),
     );
+
+    // poll stuff
+    // This cannot be less than 2, else will throw an exception
+    options.forEach((key, value) {
+      optionArray.add(Polls.options(title: key, value: value.toDouble()));
+    });
+    // --------
+
     super.initState();
   }
 
@@ -98,9 +208,93 @@ class _HostRoomState extends State<HostRoom>
   String _userId;
   String _userName;
   List<Message> _messages = <Message>[];
+  List<Poll> _polls = <Poll>[];
+  List<Option> _options = <Option>[];
   RubberAnimationController _controller;
   ScrollController _scrollController = ScrollController();
   final _userTextController = TextEditingController();
+  final _pollQuestionTextController = TextEditingController();
+  final _pollOption1TextController = TextEditingController();
+  final _pollOption2TextController = TextEditingController();
+
+  void createPoll(String q, String o1, String o2) {
+    data
+        .addPoll(
+            roomId: _roomId,
+            poll: Poll.fromUserInput(
+              question: q, //_pollQuestionTextController.text,
+            ))
+        .then((value) {
+      // This is copied from above
+      // The goal is to add options only "after" the poll is created
+      _currentMessageSubscription = _room.reference
+          .collection('polls')
+          .snapshots()
+          .listen((QuerySnapshot pollSnap) {
+        setState(() {
+          _polls = pollSnap.docs.map((DocumentSnapshot doc) {
+            return Poll.fromSnapshot(doc);
+          }).toList();
+          print("***********_polls length: ${_polls.length}");
+        });
+
+        if (_polls.length > 0) {
+          print("_polls id: ${_polls[0].id}");
+          print("roomID: ${_roomId}");
+          print("num of polls: ${_polls.length}");
+          print("_poll id: ${_polls[_polls.length - 1].id}");
+          data.addPollOption(
+              roomId: _roomId,
+              pollId: _polls[_polls.length - 1].id,
+              option: Option.fromUserInput(
+                option: o1, //,_pollOption1TextController.text,
+                userIdsVoted: [],
+                voteCount: 0,
+              ));
+          data.addPollOption(
+            roomId: _roomId,
+            pollId: _polls[_polls.length - 1].id,
+            option: Option.fromUserInput(
+              option: o2, //_pollOption2TextController.text,
+              userIdsVoted: [],
+              voteCount: 0,
+            ),
+          );
+        }
+      }); // listen
+    });
+    print("create poll (${poll}) ($poll2)");
+  }
+
+  void addOption() {
+    setState(() {
+      newOptionAdded = false;
+    });
+    data.addPollOption(
+        roomId: _roomId,
+        pollId: _polls[_polls.length - 1].id,
+        option: Option.fromUserInput(
+          option: _pollOption1TextController.text,
+          userIdsVoted: [],
+          voteCount: 0,
+        ));
+    print("optionArray: $_optionArray");
+  }
+
+  // poll stuff
+  var options = {'a': 2, 'b': 0, 'c': 2, 'd': 3};
+  var optionArray = [];
+  Polls poll, poll2;
+  bool hasVoted = false;
+  String votedOptionId;
+  bool newOptionAdded = true;
+  var _optionArray = [];
+  int prevLength = 0;
+
+  String user = "king";
+  Map usersWhoVoted = {}; //{'sam': 3, 'mike' : 4, 'john' : 1, 'kenny' : 1};
+  String creator = "eddy";
+  // ------------
 
   @override
   Widget build(BuildContext context) {
@@ -118,59 +312,227 @@ class _HostRoomState extends State<HostRoom>
               //  child: CircleAvatar(child: Text("_name[0]")),
               //),
               //Text("_name", style: Theme.of(context).textTheme.headline4),
-              TextField(
-                controller: _userTextController,
-                decoration: InputDecoration.collapsed(hintText: 'Write down your message here...'),
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+                child:
+                  TextField(
+                    controller: _userTextController,
+                    decoration: InputDecoration.collapsed(
+                        hintText: 'Write down your message here...'),
+                  ),
               ),
-              TextButton(
-                child: Text('Send Request'),
-                onPressed: () {
-                  print('Pressed');
-                  if (_userTextController.text.isNotEmpty) {
-                    data.addMessage(
+              Padding(
+                padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+                child:
+                  ElevatedButton.icon(
+                    label: Text('Send Request'),
+                    icon: Icon(Icons.send_rounded),
+                    style: ElevatedButton.styleFrom(
+                        primary: Colors.yellow[700],
+                        onPrimary: Colors.black,
+                      ),
+                    onPressed: () {
+                      print('Pressed');
+                      /*data.addPollOption(
                         roomId: _roomId,
-                        message: Message.fromUserInput(
-<<<<<<< HEAD
-                            message: _userTextController.text,
-                            userId: _userId,
-                            userName: _userName));
-=======
-                                  message: _userTextController.text,
-                                  userId: _userId,
-                                  userName: _userName
-                                )
-                    );
-                    _userTextController.clear();
->>>>>>> a22f6ff668477390243820ed06cb50a3c8d305c0
-                  }
-                },
+                        pollId: "vKbhOQi6RZ5oC3SRjDeq",
+                        option: Option.random()
+                      );*/
+                      if (_userTextController.text.isNotEmpty) {
+                        data.addMessage(
+                            roomId: _roomId,
+                            message: Message.fromUserInput(
+                                message: _userTextController.text,
+                                userId: _userId,
+                                userName: _userName));
+                        _userTextController.clear();
+                      }
+                    },
+                  ),
               ),
+              // create poll
+<<<<<<< HEAD
+              if (poll == null)
+                TextField(
+                  controller: _pollQuestionTextController,
+                  decoration:
+                      InputDecoration.collapsed(hintText: 'Question...'),
+                ),
+              if (poll == null)
+                TextField(
+                  controller: _pollOption1TextController,
+                  decoration:
+                      InputDecoration.collapsed(hintText: 'Option 1...'),
+                ),
+              if (poll == null)
+                TextField(
+                  controller: _pollOption2TextController,
+                  decoration:
+                      InputDecoration.collapsed(hintText: 'Option 2...'),
+                ),
+              if ((poll == null))
+                TextButton(
+                  child: Text('Create a new Poll'),
+                  onPressed: () {
+                    print('Pressed');
+                    if (_pollQuestionTextController.text.isNotEmpty &&
+                        _pollOption1TextController.text.isNotEmpty &&
+                        _pollOption2TextController.text.isNotEmpty) {
+                      createPoll(
+                          _pollQuestionTextController.text,
+                          _pollOption1TextController.text,
+                          _pollOption2TextController.text);
+                      _pollOption1TextController.clear();
+                    }
+                  },
+                ),
+              // add more poll options
+              if (poll != null && poll.children.length >= 2)
+                TextField(
+                  controller: _pollOption1TextController,
+                  decoration:
+                      InputDecoration.collapsed(hintText: 'New Option...'),
+                ),
+              if (poll != null && poll.children.length >= 2)
+                TextButton(
+                  child: Text('Add a new Option'),
+                  onPressed: () {
+                    if (_pollOption1TextController.text.isNotEmpty) {
+                      addOption();
+                      _pollOption1TextController.clear();
+                      print("poll children: ${poll.children.length}");
+                    }
+                  },
+=======
+              if (poll==null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+                  child:
+                    TextField(
+                      controller: _pollQuestionTextController,
+                      decoration: InputDecoration.collapsed(
+                          hintText: 'Question...'),
+                    ),
+                ),
+              if (poll==null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+                  child:
+                    TextField(
+                      controller: _pollOption1TextController,
+                      decoration: InputDecoration.collapsed(
+                          hintText: 'Option 1...'),
+                    ),
+                ),
+              if (poll==null)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+                  child:
+                    TextField(
+                      controller: _pollOption2TextController,
+                      decoration: InputDecoration.collapsed(
+                          hintText: 'Option 2...'),
+                    ),
+                ),
+              if ((poll==null))
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+                  child:
+                    ElevatedButton(
+                      child: Text('Create a new Poll'),
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.yellow,
+                        onPrimary: Colors.black,
+                      ),
+                      onPressed: () {
+                        print('Pressed');
+                        if (_pollQuestionTextController.text.isNotEmpty &&
+                            _pollOption1TextController.text.isNotEmpty &&
+                            _pollOption2TextController.text.isNotEmpty)
+                        {
+                            createPoll(_pollQuestionTextController.text, _pollOption1TextController.text, _pollOption2TextController.text);
+                            _pollOption1TextController.clear();
+                        }
+                      },
+                    ),
+                ),
+              // add more poll options
+              if (poll != null && poll.children.length>=2)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+                  child:
+                    TextField(
+                      controller: _pollOption1TextController,
+                      decoration: InputDecoration.collapsed(
+                          hintText: 'New Option...'),
+                    ),
+                ),
+              if (poll != null && poll.children.length>=2)
+                Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 5.0, horizontal: 10.0),
+                  child:
+                    ElevatedButton(
+                      child: Text('Add a new Option'),
+                      style: ElevatedButton.styleFrom(
+                        primary: Colors.yellow,
+                        onPrimary: Colors.black,
+                      ),
+                      onPressed: () {
+                        if (_pollOption1TextController.text.isNotEmpty)
+                        {
+                            addOption();
+                            _pollOption1TextController.clear();
+                            print("poll children: ${poll.children.length}");
+                        }
+                      },
+                    ),
+>>>>>>> a1bcf10d125abe39685e3117b9d5ba47473a128a
+                ),
+              // poll stuff
+              if (!hasVoted &&
+                  poll != null &&
+                  poll.children.length >= 2 &&
+                  newOptionAdded)
+                poll = Polls.castVote(
+                  children: _optionArray, //poll.children,
+                  question: poll.question,
+                  onVote: poll.onVote,
+                ),
+              if (hasVoted)
+                poll2 = Polls.viewPolls(
+                  children: poll.children,
+                  question: poll.question,
+                  userChoice: usersWhoVoted[this.user],
+                ),
+              if (hasVoted)
+                TextButton(
+                  child: Text('Undo the vote'),
+                  onPressed: () {
+                    print('Pressed');
+                    data.castVote(
+                        roomId: _room.id,
+                        pollId: _polls[0].id,
+                        optionId: votedOptionId,
+                        userId: _userId,
+                        castFlag: false);
+                    //setState(() {
+                    hasVoted = false;
+                    //});
+                  },
+                ),
+              // ------------
             ],
           ), // The underlying page (Widget)
-<<<<<<< HEAD
-          upperLayer: Container(
-              decoration: BoxDecoration(color: Colors.cyan),
-              child: ListView.builder(
-                physics: NeverScrollableScrollPhysics(),
-                controller: _scrollController,
-                itemBuilder: (BuildContext context, int i) {
-                  return ListTile(
-                    title: Text(_messages[i].message),
-                  );
-                },
-                itemCount: _messages.length,
-              )), // The bottomsheet content (Widget)
-=======
           upperLayer: ListView.builder(
-              physics: NeverScrollableScrollPhysics(),
+              physics: AlwaysScrollableScrollPhysics(),
               controller: _scrollController,
               itemCount: _messages.length,
               itemBuilder: (BuildContext context, int i) {
                 return ListTile(
-                  title: Text("${_messages[i].userName}: ${_messages[i].message}"),
+                  title:
+                      Text("${_messages[i].userName}: ${_messages[i].message}"),
                 );
               }), // The bottomsheet content (Widget)
->>>>>>> a22f6ff668477390243820ed06cb50a3c8d305c0
           //menuLayer: _getMenuLayer(),
           animationController: _controller, // The one we created earlier
         )) //Row(
