@@ -100,12 +100,19 @@ class _HostRoomState extends State<HostRoom>
                   }).toList();
                   print("_options: ${_options.length}");
                   //print("_options: ${_options[0].option}");
-                  var _optionArray = [];
+                  _optionArray = [];
                   _options.forEach((element) {
                     _optionArray.add(Polls.options(
                         title: element.option,
                         value: element.voteCount.toDouble()));
                   });
+
+                  if (prevLength!=0 && prevLength!=_optionArray.length)
+                  {
+                    newOptionAdded = true;
+                    print("######## change!! ");
+                  }
+                  prevLength = _optionArray.length;
 
                   for (var element in _options) {
                     if (element.userIdsVoted.contains(_userId)) {
@@ -142,11 +149,11 @@ class _HostRoomState extends State<HostRoom>
                           optionId: _optionId,
                           userId: _userId,
                           castFlag: true);
-                      setState(() {
+                      //setState(() {
                         this.usersWhoVoted[this.user] = choice;
                         poll.children[choice - 1][1] += 1;
                         this.hasVoted = true;
-                      });
+                      //});
                     },
                   );
                 });
@@ -211,11 +218,11 @@ class _HostRoomState extends State<HostRoom>
   final _pollOption1TextController = TextEditingController();
   final _pollOption2TextController = TextEditingController();
 
-  void createPoll(){
+  void createPoll(String q, String o1, String o2){
     data.addPoll(
       roomId: _roomId, 
       poll: Poll.fromUserInput(
-        question: _pollQuestionTextController.text, 
+        question: q,//_pollQuestionTextController.text, 
       )
     ).then((value) 
       {
@@ -242,7 +249,7 @@ class _HostRoomState extends State<HostRoom>
                   roomId: _roomId,
                   pollId: _polls[_polls.length-1].id,
                   option: Option.fromUserInput(
-                    option: _pollOption1TextController.text,
+                    option: o1,//,_pollOption1TextController.text,
                     userIdsVoted: [],
                     voteCount: 0,
                     )
@@ -251,7 +258,7 @@ class _HostRoomState extends State<HostRoom>
                   roomId: _roomId,
                   pollId: _polls[_polls.length-1].id,
                   option: Option.fromUserInput(
-                    option: _pollOption2TextController.text,
+                    option: o2,//_pollOption2TextController.text,
                     userIdsVoted: [],
                     voteCount: 0,
                     ),
@@ -265,12 +272,31 @@ class _HostRoomState extends State<HostRoom>
     print("create poll (${poll}) ($poll2)");
   }
 
+  void addOption(){
+    setState(() {
+      newOptionAdded = false;
+    });
+    data.addPollOption(
+      roomId: _roomId,
+      pollId: _polls[_polls.length-1].id,
+      option: Option.fromUserInput(
+        option: _pollOption1TextController.text,
+        userIdsVoted: [],
+        voteCount: 0,
+        )
+    );
+    print("optionArray: $_optionArray");
+  }
+
   // poll stuff
   var options = {'a': 2, 'b': 0, 'c': 2, 'd': 3};
   var optionArray = [];
   Polls poll, poll2;
   bool hasVoted = false;
   String votedOptionId;
+  bool newOptionAdded = true;
+  var _optionArray = [];
+  int prevLength=0;
 
   String user = "king";
   Map usersWhoVoted = {}; //{'sam': 3, 'mike' : 4, 'john' : 1, 'kenny' : 1};
@@ -346,14 +372,34 @@ class _HostRoomState extends State<HostRoom>
                         _pollOption1TextController.text.isNotEmpty &&
                         _pollOption2TextController.text.isNotEmpty)
                     {
-                        createPoll();
+                        createPoll(_pollQuestionTextController.text, _pollOption1TextController.text, _pollOption2TextController.text);
+                        _pollOption1TextController.clear();
+                    }
+                  },
+                ),
+              // add more poll options
+              if (poll != null && poll.children.length>=2)
+                TextField(
+                  controller: _pollOption1TextController,
+                  decoration: InputDecoration.collapsed(
+                      hintText: 'New Option...'),
+                ),
+              if (poll != null && poll.children.length>=2)
+                TextButton(
+                  child: Text('Add a new Option'),
+                  onPressed: () {
+                    if (_pollOption1TextController.text.isNotEmpty)
+                    {
+                        addOption();
+                        _pollOption1TextController.clear();
+                        print("poll children: ${poll.children.length}");
                     }
                   },
                 ),
               // poll stuff
-              if (!hasVoted && poll != null && poll.children.length>=2)
+              if (!hasVoted && poll != null && poll.children.length>=2 && newOptionAdded)
                 poll = Polls.castVote(
-                  children: poll.children,
+                  children: _optionArray,//poll.children,
                   question: poll.question,
                   onVote: poll.onVote,
                 ),
@@ -374,9 +420,9 @@ class _HostRoomState extends State<HostRoom>
                         optionId: votedOptionId,
                         userId: _userId,
                         castFlag: false);
-                    setState(() {
+                    //setState(() {
                       hasVoted = false;
-                    });
+                    //});
                   },
                 ),
               // ------------
