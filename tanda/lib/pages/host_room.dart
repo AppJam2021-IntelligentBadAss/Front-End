@@ -107,8 +107,7 @@ class _HostRoomState extends State<HostRoom>
                         value: element.voteCount.toDouble()));
                   });
 
-                  if (prevLength!=0 && prevLength!=_optionArray.length)
-                  {
+                  if (prevLength != 0 && prevLength != _optionArray.length) {
                     newOptionAdded = true;
                     print("######## change!! ");
                   }
@@ -150,9 +149,9 @@ class _HostRoomState extends State<HostRoom>
                           userId: _userId,
                           castFlag: true);
                       //setState(() {
-                        this.usersWhoVoted[this.user] = choice;
-                        poll.children[choice - 1][1] += 1;
-                        this.hasVoted = true;
+                      this.usersWhoVoted[this.user] = choice;
+                      poll.children[choice - 1][1] += 1;
+                      this.hasVoted = true;
                       //});
                     },
                   );
@@ -170,8 +169,8 @@ class _HostRoomState extends State<HostRoom>
     _controller = RubberAnimationController(
       vsync: this,
       dismissable: true,
-      lowerBoundValue: AnimationControllerValue(pixel: 350),
-      upperBoundValue: AnimationControllerValue(pixel: 350),
+      lowerBoundValue: AnimationControllerValue(pixel: 200),
+      upperBoundValue: AnimationControllerValue(pixel: 200),
       //halfBoundValue: AnimationControllerValue(percentage: 0.8),
       duration: Duration(milliseconds: 200),
     );
@@ -218,73 +217,67 @@ class _HostRoomState extends State<HostRoom>
   final _pollOption1TextController = TextEditingController();
   final _pollOption2TextController = TextEditingController();
 
-  void createPoll(String q, String o1, String o2){
-    data.addPoll(
-      roomId: _roomId, 
-      poll: Poll.fromUserInput(
-        question: q,//_pollQuestionTextController.text, 
-      )
-    ).then((value) 
-      {
-        // This is copied from above
-        // The goal is to add options only "after" the poll is created
-        _currentMessageSubscription = _room.reference
-            .collection('polls')
-            .snapshots()
-            .listen((QuerySnapshot pollSnap) {
-              setState(() {
-                _polls = pollSnap.docs.map((DocumentSnapshot doc) {
-                  return Poll.fromSnapshot(doc);
-                }).toList();
-                print("***********_polls length: ${_polls.length}");
-              });
-              
-              if (_polls.length > 0)
-              { 
-                print("_polls id: ${_polls[0].id}");
-                print("roomID: ${_roomId}");
-                print("num of polls: ${_polls.length}");
-                print("_poll id: ${_polls[_polls.length-1].id}");
-                data.addPollOption(
-                  roomId: _roomId,
-                  pollId: _polls[_polls.length-1].id,
-                  option: Option.fromUserInput(
-                    option: o1,//,_pollOption1TextController.text,
-                    userIdsVoted: [],
-                    voteCount: 0,
-                    )
-                );
-                data.addPollOption(
-                  roomId: _roomId,
-                  pollId: _polls[_polls.length-1].id,
-                  option: Option.fromUserInput(
-                    option: o2,//_pollOption2TextController.text,
-                    userIdsVoted: [],
-                    voteCount: 0,
-                    ),
-                );
-              }
-            }); // listen
-        
-        
-      }
-    );
+  void createPoll(String q, String o1, String o2) {
+    data
+        .addPoll(
+            roomId: _roomId,
+            poll: Poll.fromUserInput(
+              question: q, //_pollQuestionTextController.text,
+            ))
+        .then((value) {
+      // This is copied from above
+      // The goal is to add options only "after" the poll is created
+      _currentMessageSubscription = _room.reference
+          .collection('polls')
+          .snapshots()
+          .listen((QuerySnapshot pollSnap) {
+        setState(() {
+          _polls = pollSnap.docs.map((DocumentSnapshot doc) {
+            return Poll.fromSnapshot(doc);
+          }).toList();
+          print("***********_polls length: ${_polls.length}");
+        });
+
+        if (_polls.length > 0) {
+          print("_polls id: ${_polls[0].id}");
+          print("roomID: ${_roomId}");
+          print("num of polls: ${_polls.length}");
+          print("_poll id: ${_polls[_polls.length - 1].id}");
+          data.addPollOption(
+              roomId: _roomId,
+              pollId: _polls[_polls.length - 1].id,
+              option: Option.fromUserInput(
+                option: o1, //,_pollOption1TextController.text,
+                userIdsVoted: [],
+                voteCount: 0,
+              ));
+          data.addPollOption(
+            roomId: _roomId,
+            pollId: _polls[_polls.length - 1].id,
+            option: Option.fromUserInput(
+              option: o2, //_pollOption2TextController.text,
+              userIdsVoted: [],
+              voteCount: 0,
+            ),
+          );
+        }
+      }); // listen
+    });
     print("create poll (${poll}) ($poll2)");
   }
 
-  void addOption(){
+  void addOption() {
     setState(() {
       newOptionAdded = false;
     });
     data.addPollOption(
-      roomId: _roomId,
-      pollId: _polls[_polls.length-1].id,
-      option: Option.fromUserInput(
-        option: _pollOption1TextController.text,
-        userIdsVoted: [],
-        voteCount: 0,
-        )
-    );
+        roomId: _roomId,
+        pollId: _polls[_polls.length - 1].id,
+        option: Option.fromUserInput(
+          option: _pollOption1TextController.text,
+          userIdsVoted: [],
+          voteCount: 0,
+        ));
     print("optionArray: $_optionArray");
   }
 
@@ -296,7 +289,7 @@ class _HostRoomState extends State<HostRoom>
   String votedOptionId;
   bool newOptionAdded = true;
   var _optionArray = [];
-  int prevLength=0;
+  int prevLength = 0;
 
   String user = "king";
   Map usersWhoVoted = {}; //{'sam': 3, 'mike' : 4, 'john' : 1, 'kenny' : 1};
@@ -345,61 +338,65 @@ class _HostRoomState extends State<HostRoom>
                 },
               ),
               // create poll
-              if (poll==null)
+              if (poll == null)
                 TextField(
                   controller: _pollQuestionTextController,
-                  decoration: InputDecoration.collapsed(
-                      hintText: 'Question...'),
+                  decoration:
+                      InputDecoration.collapsed(hintText: 'Question...'),
                 ),
-              if (poll==null)
+              if (poll == null)
                 TextField(
                   controller: _pollOption1TextController,
-                  decoration: InputDecoration.collapsed(
-                      hintText: 'Option 1...'),
+                  decoration:
+                      InputDecoration.collapsed(hintText: 'Option 1...'),
                 ),
-              if (poll==null)
+              if (poll == null)
                 TextField(
                   controller: _pollOption2TextController,
-                  decoration: InputDecoration.collapsed(
-                      hintText: 'Option 2...'),
+                  decoration:
+                      InputDecoration.collapsed(hintText: 'Option 2...'),
                 ),
-              if ((poll==null))
+              if ((poll == null))
                 TextButton(
                   child: Text('Create a new Poll'),
                   onPressed: () {
                     print('Pressed');
                     if (_pollQuestionTextController.text.isNotEmpty &&
                         _pollOption1TextController.text.isNotEmpty &&
-                        _pollOption2TextController.text.isNotEmpty)
-                    {
-                        createPoll(_pollQuestionTextController.text, _pollOption1TextController.text, _pollOption2TextController.text);
-                        _pollOption1TextController.clear();
+                        _pollOption2TextController.text.isNotEmpty) {
+                      createPoll(
+                          _pollQuestionTextController.text,
+                          _pollOption1TextController.text,
+                          _pollOption2TextController.text);
+                      _pollOption1TextController.clear();
                     }
                   },
                 ),
               // add more poll options
-              if (poll != null && poll.children.length>=2)
+              if (poll != null && poll.children.length >= 2)
                 TextField(
                   controller: _pollOption1TextController,
-                  decoration: InputDecoration.collapsed(
-                      hintText: 'New Option...'),
+                  decoration:
+                      InputDecoration.collapsed(hintText: 'New Option...'),
                 ),
-              if (poll != null && poll.children.length>=2)
+              if (poll != null && poll.children.length >= 2)
                 TextButton(
                   child: Text('Add a new Option'),
                   onPressed: () {
-                    if (_pollOption1TextController.text.isNotEmpty)
-                    {
-                        addOption();
-                        _pollOption1TextController.clear();
-                        print("poll children: ${poll.children.length}");
+                    if (_pollOption1TextController.text.isNotEmpty) {
+                      addOption();
+                      _pollOption1TextController.clear();
+                      print("poll children: ${poll.children.length}");
                     }
                   },
                 ),
               // poll stuff
-              if (!hasVoted && poll != null && poll.children.length>=2 && newOptionAdded)
+              if (!hasVoted &&
+                  poll != null &&
+                  poll.children.length >= 2 &&
+                  newOptionAdded)
                 poll = Polls.castVote(
-                  children: _optionArray,//poll.children,
+                  children: _optionArray, //poll.children,
                   question: poll.question,
                   onVote: poll.onVote,
                 ),
@@ -421,7 +418,7 @@ class _HostRoomState extends State<HostRoom>
                         userId: _userId,
                         castFlag: false);
                     //setState(() {
-                      hasVoted = false;
+                    hasVoted = false;
                     //});
                   },
                 ),
